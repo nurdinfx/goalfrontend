@@ -40,6 +40,7 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
 
@@ -110,6 +111,23 @@ const calculateWorkerStats = (worker) => {
     finalPayment,
     advancePayments: worker?.advancePayments || []
   };
+};
+
+// ==================== CONNECTION TEST ====================
+export const testConnection = async () => {
+  try {
+    console.log('🔗 Testing connection to:', api.defaults.baseURL);
+    const response = await api.get('/health');
+    console.log('✅ Backend connection successful');
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('❌ Backend connection failed:', error.message);
+    return { 
+      success: false, 
+      error: error.message,
+      url: api.defaults.baseURL
+    };
+  }
 };
 
 // ==================== INDIVIDUAL EXPORTED FUNCTIONS ====================
@@ -667,6 +685,7 @@ const apiService = {
   // Health
   getHealth,
   healthCheck,
+  testConnection,
   
   // Villages
   getVillages,
