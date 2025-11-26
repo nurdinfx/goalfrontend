@@ -33,13 +33,13 @@ export const AuthProvider = ({ children }) => {
       const userData = localStorage.getItem('user');
 
       if (token && userData) {
-        // Simply use the stored user data without backend verification
-        // This prevents logout when backend is down
         setUser(JSON.parse(userData));
-        
-        // Check backend status in background without affecting auth
-        checkBackendConnection();
       }
+
+      // Always perform a single, quick backend health check on app start
+      // so the login screen can show "Connected" or "Demo mode" promptly.
+      await checkBackendConnection();
+
     } catch (error) {
       console.error('Auth check failed:', error);
     } finally {

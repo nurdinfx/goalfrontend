@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Eye, EyeOff, Loader, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const { login, backendStatus, checkBackendConnection } = useAuth();
+  const { login, backendStatus } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -11,10 +11,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    checkBackendConnection();
-  }, [checkBackendConnection]);
 
   const handleChange = (e) => {
     setFormData({
