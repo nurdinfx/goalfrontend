@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 
 const AuthContext = createContext();
@@ -16,11 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [backendStatus, setBackendStatus] = useState('checking');
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkBackendConnection = async () => {
+  const checkBackendConnection = useCallback(async () => {
     try {
       setBackendStatus('checking');
       await apiService.getHealth();
@@ -29,9 +25,9 @@ export const AuthProvider = ({ children }) => {
       console.log('Backend connection failed');
       setBackendStatus('disconnected');
     }
-  };
+  }, []);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const userData = localStorage.getItem('user');
@@ -49,7 +45,11 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [checkBackendConnection]);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const clearAuthData = () => {
     localStorage.removeItem('token');

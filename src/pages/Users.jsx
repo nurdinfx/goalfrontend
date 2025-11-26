@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Users as UsersIcon, Mail, User, Shield, Search, RefreshCw, Loader, Eye, EyeOff, Lock } from 'lucide-react';
-import apiService from '../services/api';
+import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Users = () => {

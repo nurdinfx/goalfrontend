@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Users, Phone, Mail, Calendar, DollarSign, MapPin, Loader, Printer, Search, RefreshCw, CreditCard, FileText } from 'lucide-react';
-import apiService from '../services/api';
+import { apiService } from '../services/api';
 
 const Workers = () => {
   const [loading, setLoading] = useState(false);

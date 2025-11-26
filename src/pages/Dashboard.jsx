@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, DollarSign, CheckCircle, XCircle, Building, MapPin, TrendingUp, Calendar, Loader, RefreshCw } from 'lucide-react';
-import apiService from '../services/api';
+import { apiService } from '../services/api';
 
 // Get current month function - FIXED
 const getCurrentMonth = () => {

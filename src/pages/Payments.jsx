@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Calendar, Filter, Download, CheckCircle, XCircle, Printer, Search } from 'lucide-react';
-import apiService from '../services/api';
+import { apiService } from '../services/api';
 
 const Payments = ({ villages, customers, updateCustomer }) => {
   const [filter, setFilter] = useState({ 
