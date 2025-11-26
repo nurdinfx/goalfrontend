@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle, CheckCircle, Trash2, RefreshCw } from 'lucide-react';
+import config from '../config/env';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -121,7 +122,7 @@ const Login = () => {
               <div className="flex items-center">
                 <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
                 <p className="text-sm text-yellow-800">
-                  Backend server not detected at http://localhost:5001
+                  Backend server not detected at {config.apiBaseUrl}
                 </p>
               </div>
             </div>
@@ -152,7 +153,7 @@ const Login = () => {
               <ul className="text-xs text-gray-600 space-y-1">
                 <li>• Make sure backend is running: <code>npm start</code> in backend folder</li>
                 <li>• Check if port 5001 is available and not blocked</li>
-                <li>• Verify backend URL: http://localhost:5001</li>
+                <li>• Verify backend URL: {config.apiBaseUrl}</li>
                 <li>• Check console for detailed error messages</li>
                 <li>• Ensure MongoDB is running if using database</li>
               </ul>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Car, User, DollarSign, Palette, Printer, RefreshCw, Phone, FileText } from 'lucide-react';
+import config from '../config/env';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = config.apiBaseUrl;
 
 // Get current month function
 const getCurrentMonth = () => {

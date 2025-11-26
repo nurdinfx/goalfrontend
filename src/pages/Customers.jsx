@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Phone, MapPin, DollarSign, Users, CheckCircle, XCircle, Printer, Calendar, Building, Map, CheckSquare } from 'lucide-react';
+import config from '../config/env';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = config.apiBaseUrl;
 
 // Generate all 12 months for the current year
 const generateAllMonths = () => {

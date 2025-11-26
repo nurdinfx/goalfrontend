@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Filter, BarChart3, Users, DollarSign, TrendingUp, Printer, Search, Calendar, MapPin, Building, FileText, PieChart } from 'lucide-react';
 import { apiService } from '../services/api';
+import config from '../config/env';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = config.apiBaseUrl;
 
 // Get current month function
 const getCurrentMonth = () => {

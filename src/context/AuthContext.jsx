@@ -139,7 +139,9 @@ export const AuthProvider = ({ children }) => {
     loading,
     updateUser,
     backendStatus,
-    checkBackendConnection
+    backendConnected: backendStatus === 'connected',
+    checkBackendConnection,
+    testBackendConnection: checkBackendConnection
   };
 
   return (

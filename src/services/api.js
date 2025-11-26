@@ -1,10 +1,9 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5001/api';
+import config from '../config/env';
 
 // Create axios instance with default configuration
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: config.apiBaseUrl,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -511,7 +510,8 @@ export const apiService = {
   getDashboardStats: async () => {
     try {
       const response = await api.get('/dashboard/stats');
-      return handleResponse(response);
+      const data = handleResponse(response);
+      return data?.data || data;
     } catch (error) {
       console.error('❌ Error fetching dashboard stats:', error.message);
       await delay(300);
