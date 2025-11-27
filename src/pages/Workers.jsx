@@ -343,7 +343,7 @@ const Workers = () => {
     ? formatDate(selectedExpenseStats.expenses[0].date)
     : 'N/A';
 
-  // Print all workers
+  // Print all workers - Updated version without status column
   const handlePrintAllWorkers = () => {
     const printWindow = window.open('', '_blank');
     const allWorkersData = filteredWorkers.map(worker => {
@@ -442,10 +442,10 @@ const Workers = () => {
                 <th>Worker ID</th>
                 <th>Name</th>
                 <th>Phone</th>
+                <th>Hire Date</th>
                 <th>Salary</th>
                 <th>Expenses</th>
                 <th>Final Pay</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -455,10 +455,10 @@ const Workers = () => {
                   <td>${worker.workerId || 'N/A'}</td>
                   <td>${worker.fullName}</td>
                   <td>${worker.phoneNumber}</td>
+                  <td>${formatDate(worker.hireDate)}</td>
                   <td>$${worker.monthlySalary.toFixed(2)}</td>
                   <td>$${worker.totalExpenses.toFixed(2)}</td>
                   <td>$${worker.finalPayment.toFixed(2)}</td>
-                  <td>${worker.status}</td>
                 </tr>
               `).join('')}
             </tbody>

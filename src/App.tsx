@@ -9,6 +9,7 @@ import Payments from './pages/Payments';
 import Workers from './pages/Workers';
 import Cars from './pages/Cars';
 import Reports from './pages/Reports';
+import Village from './pages/Village';
 import CompanyExpenses from './pages/CompanyExpenses';
 import Withdraws from './pages/Withdraws';
 import Users from './pages/Users';
@@ -65,10 +66,26 @@ function AppContent() {
         apiService.getCars()
       ]);
 
-      setVillages(villagesRes.status === 'fulfilled' ? (villagesRes.value.data || []) : []);
-      setCustomers(customersRes.status === 'fulfilled' ? (customersRes.value.data || []) : []);
-      setWorkers(workersRes.status === 'fulfilled' ? (workersRes.value.data || []) : []);
-      setCars(carsRes.status === 'fulfilled' ? (carsRes.value.cars || []) : []);
+      setVillages(
+        villagesRes.status === 'fulfilled'
+          ? (Array.isArray(villagesRes.value) ? villagesRes.value : (villagesRes.value?.data || []))
+          : []
+      );
+      setCustomers(
+        customersRes.status === 'fulfilled'
+          ? (Array.isArray(customersRes.value) ? customersRes.value : (customersRes.value?.data || []))
+          : []
+      );
+      setWorkers(
+        workersRes.status === 'fulfilled'
+          ? (Array.isArray(workersRes.value) ? workersRes.value : (workersRes.value?.data || []))
+          : []
+      );
+      setCars(
+        carsRes.status === 'fulfilled'
+          ? (Array.isArray(carsRes.value) ? carsRes.value : (carsRes.value?.cars || carsRes.value?.data || []))
+          : []
+      );
 
       // Initialize empty arrays for other data
       setCompanyExpenses([]);
@@ -396,6 +413,11 @@ function AppContent() {
                     updateCustomer={updateCustomer} 
                     deleteCustomer={deleteCustomer} 
                     refreshData={refreshData}
+                  />
+                } />
+                <Route path="/village" element={
+                  <Village 
+                    villages={villages}
                   />
                 } />
                 <Route path="/payments" element={

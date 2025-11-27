@@ -101,9 +101,6 @@ const Cars = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       car.plateNumber?.toLowerCase().includes(searchLower) ||
-      car.brand?.toLowerCase().includes(searchLower) ||
-      car.model?.toLowerCase().includes(searchLower) ||
-      car.driverName?.toLowerCase().includes(searchLower) ||
       car.carType?.toLowerCase().includes(searchLower)
     );
   });
@@ -132,22 +129,6 @@ const Cars = () => {
     
     if (!formData.carType?.trim()) {
       errors.carType = 'Car type is required';
-    }
-    
-    if (!formData.brand?.trim()) {
-      errors.brand = 'Brand is required';
-    }
-    
-    if (!formData.model?.trim()) {
-      errors.model = 'Model is required';
-    }
-    
-    if (!formData.year || formData.year < 1900 || formData.year > new Date().getFullYear() + 1) {
-      errors.year = 'Valid year is required';
-    }
-    
-    if (!formData.driverName?.trim()) {
-      errors.driverName = 'Driver name is required';
     }
     
     return errors;
@@ -186,12 +167,6 @@ const Cars = () => {
     const carData = {
       plateNumber: formData.get('plateNumber').trim(),
       carType: formData.get('carType').trim(),
-      brand: formData.get('brand').trim(),
-      model: formData.get('model').trim(),
-      year: parseInt(formData.get('year')) || 0,
-      color: formData.get('color')?.trim() || '',
-      driverName: formData.get('driverName').trim(),
-      driverPhone: formData.get('driverPhone')?.trim() || '',
       status: formData.get('status') || 'active'
     };
 
@@ -335,19 +310,202 @@ const Cars = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  // Print function
+  // Print function - FIXED
   const handlePrintCarList = () => {
-    setPrintData({
-      cars: filteredCars,
-      printedDate: new Date().toLocaleDateString(),
-      printedTime: new Date().toLocaleTimeString(),
-      totalCount: filteredCars.length,
-      selectedMonth: selectedMonth
-    });
-
+    const printContent = generatePrintContent();
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Car Management Report</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              color: #333;
+              font-size: 12px;
+              line-height: 1.4;
+            }
+            .print-header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #333;
+              padding-bottom: 10px;
+            }
+            .print-header h1 {
+              margin: 0;
+              font-size: 24px;
+              color: #2c5282;
+            }
+            .print-header p {
+              margin: 5px 0;
+              color: #666;
+            }
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              gap: 15px;
+              margin-bottom: 20px;
+              padding: 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+            }
+            .stat-item {
+              text-align: center;
+              padding: 10px;
+            }
+            .stat-value {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 5px;
+            }
+            .stat-label {
+              font-size: 11px;
+              color: #666;
+            }
+            .print-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              font-size: 10px;
+            }
+            .print-table th {
+              background-color: #2c5282;
+              color: white;
+              padding: 8px;
+              text-align: left;
+              font-weight: bold;
+              border: 1px solid #ddd;
+            }
+            .print-table td {
+              padding: 8px;
+              border: 1px solid #ddd;
+            }
+            .print-table tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            .status-active {
+              color: #059669;
+              font-weight: bold;
+            }
+            .status-maintenance {
+              color: #d97706;
+              font-weight: bold;
+            }
+            .status-inactive {
+              color: #dc2626;
+              font-weight: bold;
+            }
+            .print-footer {
+              margin-top: 30px;
+              text-align: center;
+              color: #666;
+              font-size: 11px;
+              border-top: 1px solid #ddd;
+              padding-top: 10px;
+            }
+            @media print {
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load before printing
     setTimeout(() => {
-      window.print();
-    }, 500);
+      printWindow.print();
+      // Optional: close window after printing
+      // printWindow.afterprint = () => printWindow.close();
+    }, 250);
+  };
+
+  // Generate print content
+  const generatePrintContent = () => {
+    const totalCars = cars.length;
+    const activeCars = cars.filter(car => car.status === 'active').length;
+    const totalExpenses = cars.reduce((sum, car) => sum + (car.expenses?.reduce((expSum, exp) => expSum + exp.amount, 0) || 0), 0);
+    const totalExpenseEntries = cars.reduce((sum, car) => sum + (car.expenses?.length || 0), 0);
+    const printedDate = new Date().toLocaleDateString();
+    const printedTime = new Date().toLocaleTimeString();
+
+    return `
+      <div class="print-header">
+        <h1>Car Management Report</h1>
+        <p>Generated on ${printedDate} at ${printedTime}</p>
+        <p>Period: ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">${totalCars}</div>
+          <div class="stat-label">Total Cars</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${activeCars}</div>
+          <div class="stat-label">Active Cars</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">$${totalExpenses.toFixed(2)}</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${totalExpenseEntries}</div>
+          <div class="stat-label">Expense Entries</div>
+        </div>
+      </div>
+
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Plate Number</th>
+            <th>Car Type</th>
+            <th>Status</th>
+            <th>Total Expenses</th>
+            <th>Expense Count</th>
+            <th>Last Expense Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredCars.map((car, index) => {
+            const { totalExpenses } = calculateCarStats(car);
+            const sortedExpenses = getSortedExpenses(car);
+            const latestExpense = sortedExpenses[0];
+            const statusClass = `status-${car.status}`;
+            
+            return `
+              <tr>
+                <td>${index + 1}</td>
+                <td><strong>${car.plateNumber}</strong></td>
+                <td>${car.carType}</td>
+                <td class="${statusClass}">${car.status?.toUpperCase()}</td>
+                <td>$${totalExpenses.toFixed(2)}</td>
+                <td>${car.expenses?.length || 0}</td>
+                <td>${latestExpense ? formatExpenseDate(latestExpense.expenseDate || latestExpense.date) : 'N/A'}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <div class="print-footer">
+        <p>Total Records: ${filteredCars.length} | Generated by Car Management System</p>
+        <p>This report is generated automatically and contains confidential business information</p>
+      </div>
+    `;
   };
 
   // Statistics
@@ -362,7 +520,7 @@ const Cars = () => {
       <div className="flex justify-between items-center no-print">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Car Management</h1>
-          <p className="text-gray-600 mt-2">Manage cars, drivers, and expenses</p>
+          <p className="text-gray-600 mt-2">Manage cars and expenses</p>
         </div>
         <button
           onClick={() => {
@@ -383,15 +541,18 @@ const Cars = () => {
         </div>
       )}
 
+      {/* Rest of your existing component remains exactly the same */}
+      {/* Expense History Modal, Stats, Search and Controls, Cars Table, Modals */}
+      
       {/* Expense History Modal */}
       {showExpenseHistoryModal && expenseHistoryCar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
           <div className="bg-white rounded-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-semibold mb-2">
-              Expense History - {expenseHistoryCar.brand} {expenseHistoryCar.model} ({expenseHistoryCar.plateNumber})
+              Expense History - {expenseHistoryCar.plateNumber}
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Driver: {expenseHistoryCar.driverName || 'N/A'}
+              Type: {expenseHistoryCar.carType || 'N/A'}
             </p>
 
             {(() => {
@@ -498,7 +659,7 @@ const Cars = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search cars by plate, brand, model, or driver..."
+              placeholder="Search cars by plate number or type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -540,10 +701,7 @@ const Cars = () => {
                   #
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Car & Driver Information
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Car Details
+                  Car Information
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Expense Summary
@@ -569,34 +727,13 @@ const Cars = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {car.brand} {car.model}
+                        Plate: {car.plateNumber}
                       </div>
-                      <div className="text-sm text-gray-500">Plate: {car.plateNumber}</div>
-                      <div className="text-sm text-gray-900 font-medium mt-1">
-                        {car.driverName}
-                      </div>
-                      <div className="text-sm text-gray-500 flex items-center">
-                        <Phone className="w-4 h-4 mr-1" />
-                        {car.driverPhone || 'No phone'}
-                      </div>
+                      <div className="text-sm text-gray-500">Type: {car.carType}</div>
                       <div className="text-xs text-gray-400 mt-1">
                         Status: <span className={`font-semibold ${car.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
                           {car.status?.toUpperCase()}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="text-sm text-gray-900">
-                          Type: {car.carType}
-                        </div>
-                        <div className="text-sm text-gray-900">
-                          Year: {car.year}
-                        </div>
-                        <div className="text-sm text-gray-900 flex items-center">
-                          <Palette className="w-4 h-4 mr-2 text-blue-500" />
-                          {car.color || 'No color'}
-                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -741,112 +878,6 @@ const Cars = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Brand *
-                  </label>
-                  <input
-                    type="text"
-                    name="brand"
-                    required
-                    defaultValue={editingCar?.brand}
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      formErrors.brand ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                    }`}
-                    placeholder="Car brand"
-                  />
-                  {formErrors.brand && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.brand}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Model *
-                  </label>
-                  <input
-                    type="text"
-                    name="model"
-                    required
-                    defaultValue={editingCar?.model}
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      formErrors.model ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                    }`}
-                    placeholder="Car model"
-                  />
-                  {formErrors.model && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.model}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Year *
-                  </label>
-                  <input
-                    type="number"
-                    name="year"
-                    required
-                    min="1900"
-                    max={new Date().getFullYear() + 1}
-                    defaultValue={editingCar?.year}
-                    className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      formErrors.year ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                    }`}
-                    placeholder="Year"
-                  />
-                  {formErrors.year && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.year}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Color
-                  </label>
-                  <input
-                    type="text"
-                    name="color"
-                    defaultValue={editingCar?.color}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Color"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Driver Name *
-                </label>
-                <input
-                  type="text"
-                  name="driverName"
-                  required
-                  defaultValue={editingCar?.driverName}
-                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    formErrors.driverName ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
-                  }`}
-                  placeholder="Driver full name"
-                />
-                {formErrors.driverName && (
-                  <p className="text-red-500 text-xs mt-1">{formErrors.driverName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Driver Phone
-                </label>
-                <input
-                  type="tel"
-                  name="driverPhone"
-                  defaultValue={editingCar?.driverPhone}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Driver phone number"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Status
@@ -895,7 +926,7 @@ const Cars = () => {
               {editingExpense ? 'Edit Expense' : 'Add Expense'}
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Car: {selectedCar.brand} {selectedCar.model} ({selectedCar.plateNumber})
+              Car: {selectedCar.plateNumber} ({selectedCar.carType})
             </p>
             <form onSubmit={handleExpenseSubmit} className="space-y-4">
               <div>
@@ -1005,23 +1036,6 @@ const Cars = () => {
           </div>
         </div>
       )}
-
-      {/* Print Styles */}
-      <style>
-        {`
-          @media print {
-            .no-print {
-              display: none !important;
-            }
-            body {
-              font-size: 12px;
-            }
-            .print-break {
-              page-break-after: always;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Trash2, DollarSign, Users, Truck, Building, Wrench, FileText, Printer, Search, Calendar, PieChart, Loader } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Users, Printer, Search, Calendar, PieChart, Loader } from 'lucide-react';
 import { apiService } from '../services/api';
 
 const formatCurrency = (amount) => {
@@ -26,7 +26,6 @@ const CompanyExpenses = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
   const [dateRange, setDateRange] = useState({
     start: '',
     end: ''
@@ -34,15 +33,6 @@ const CompanyExpenses = () => {
   const [formLoading, setFormLoading] = useState(false);
   
   const printRef = useRef();
-
-  const expenseTypes = [
-    { value: 'salary', label: 'Salary', icon: Users, color: 'text-green-600' },
-    { value: 'transportation', label: 'Transportation', icon: Truck, color: 'text-blue-600' },
-    { value: 'office_supplies', label: 'Office Supplies', icon: FileText, color: 'text-purple-600' },
-    { value: 'utilities', label: 'Utilities', icon: Building, color: 'text-orange-600' },
-    { value: 'maintenance', label: 'Maintenance', icon: Wrench, color: 'text-red-600' },
-    { value: 'other', label: 'Other', icon: DollarSign, color: 'text-gray-600' }
-  ];
 
   useEffect(() => {
     loadData();
@@ -67,23 +57,18 @@ const CompanyExpenses = () => {
     }
   };
 
-  // FIXED: handleExpenseSubmit now properly preserves date
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
     
     const formData = new FormData(e.target);
     const notes = formData.get('notes')?.trim() || '';
-    const typeValue = formData.get('type');
-    const typeLabel = expenseTypes.find(t => t.value === typeValue)?.label || typeValue;
     const expenseData = {
-      type: typeValue,
       amount: parseFloat(formData.get('amount')),
-      employeeName: formData.get('employeeName'),
       category: formData.get('category'),
       notes,
-      description: notes || `${typeLabel} expense`,
-      date: formData.get('date') // Always get date from form
+      description: notes || `Expense`,
+      date: formData.get('date')
     };
 
     // Ensure date is always set - use existing date for edits or current date for new entries
@@ -183,10 +168,8 @@ const CompanyExpenses = () => {
 
   const filteredExpenses = expenses.filter(expense => {
     const matchesSearch = expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.notes?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = filterType === 'all' || expense.type === filterType;
+                         expense.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         expense.category?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const expenseDate = new Date(expense.date);
     const startDate = dateRange.start ? new Date(dateRange.start) : null;
@@ -195,18 +178,8 @@ const CompanyExpenses = () => {
     const matchesDate = (!startDate || expenseDate >= startDate) && 
                        (!endDate || expenseDate <= endDate);
     
-    return matchesSearch && matchesType && matchesDate;
+    return matchesSearch && matchesDate;
   });
-
-  const getExpenseTypeIcon = (type) => {
-    const expenseType = expenseTypes.find(t => t.value === type);
-    return expenseType ? expenseType.icon : DollarSign;
-  };
-
-  const getExpenseTypeColor = (type) => {
-    const expenseType = expenseTypes.find(t => t.value === type);
-    return expenseType ? expenseType.color : 'text-gray-600';
-  };
 
   // Professional Print Function
   const handlePrintReport = () => {
@@ -309,13 +282,6 @@ const CompanyExpenses = () => {
               text-align: right;
               font-weight: bold;
             }
-            .type-badge {
-              padding: 4px 8px;
-              border-radius: 4px;
-              font-size: 10px;
-              font-weight: bold;
-              text-transform: uppercase;
-            }
             .footer {
               margin-top: 40px;
               border-top: 1px solid #e5e7eb;
@@ -351,11 +317,8 @@ const CompanyExpenses = () => {
               <div class="summary-label">Total Expenses</div>
             </div>
             <div class="summary-card">
-              <div class="summary-value">${Object.keys(expenses.reduce((acc, exp) => {
-                acc[exp.type] = true;
-                return acc;
-              }, {})).length}</div>
-              <div class="summary-label">Expense Types</div>
+              <div class="summary-value">${filteredExpenses.length}</div>
+              <div class="summary-label">Total Records</div>
             </div>
           </div>
 
@@ -363,8 +326,6 @@ const CompanyExpenses = () => {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Type</th>
-                <th>Employee</th>
                 <th>Category</th>
                 <th>Notes</th>
                 <th>Amount</th>
@@ -374,31 +335,13 @@ const CompanyExpenses = () => {
               ${filteredExpenses.map(expense => `
                 <tr>
                   <td>${formatDate(expense.date)}</td>
-                  <td>
-                    <span class="type-badge" style="background-color: ${
-                      expense.type === 'salary' ? '#dcfce7' :
-                      expense.type === 'transportation' ? '#dbeafe' :
-                      expense.type === 'office_supplies' ? '#f3e8ff' :
-                      expense.type === 'utilities' ? '#ffedd5' :
-                      expense.type === 'maintenance' ? '#fee2e2' : '#f3f4f6'
-                    }; color: ${
-                      expense.type === 'salary' ? '#166534' :
-                      expense.type === 'transportation' ? '#1e40af' :
-                      expense.type === 'office_supplies' ? '#7c3aed' :
-                      expense.type === 'utilities' ? '#c2410c' :
-                      expense.type === 'maintenance' ? '#dc2626' : '#374151'
-                    };">
-                      ${expenseTypes.find(t => t.value === expense.type)?.label || expense.type}
-                    </span>
-                  </td>
-                  <td>${expense.employeeName || '-'}</td>
                   <td>${expense.category || '-'}</td>
                   <td>${expense.notes || '-'}</td>
                   <td class="amount">${formatCurrency(expense.amount)}</td>
                 </tr>
               `).join('')}
               <tr class="total-row">
-                <td colspan="5" style="text-align: right; padding-right: 20px;"><strong>GRAND TOTAL:</strong></td>
+                <td colspan="3" style="text-align: right; padding-right: 20px;"><strong>GRAND TOTAL:</strong></td>
                 <td class="amount">${formatCurrency(totalAmount)}</td>
               </tr>
             </tbody>
@@ -420,11 +363,7 @@ const CompanyExpenses = () => {
 
   const summary = {
     totalExpenses: expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0),
-    totalRecords: expenses.length,
-    expensesByType: expenses.reduce((acc, expense) => {
-      acc[expense.type] = (acc[expense.type] || 0) + expense.amount;
-      return acc;
-    }, {})
+    totalRecords: expenses.length
   };
 
   return (
@@ -473,19 +412,10 @@ const CompanyExpenses = () => {
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <FileText className="w-6 h-6 text-blue-500 mr-3" />
+            <PieChart className="w-6 h-6 text-blue-500 mr-3" />
             <div>
               <p className="text-xs text-gray-600">Total Records</p>
               <p className="text-lg font-semibold">{summary.totalRecords}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <PieChart className="w-6 h-6 text-purple-500 mr-3" />
-            <div>
-              <p className="text-xs text-gray-600">Expense Types</p>
-              <p className="text-lg font-semibold">{Object.keys(summary.expensesByType).length}</p>
             </div>
           </div>
         </div>
@@ -493,7 +423,7 @@ const CompanyExpenses = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -504,16 +434,6 @@ const CompanyExpenses = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
           </div>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="all">All Types</option>
-            {expenseTypes.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
-          </select>
           <input
             type="date"
             value={dateRange.start}
@@ -543,67 +463,49 @@ const CompanyExpenses = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredExpenses.map((expense) => {
-                  const IconComponent = getExpenseTypeIcon(expense.type);
-                  const iconColor = getExpenseTypeColor(expense.type);
-                  
-                  return (
-                    <tr key={expense._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(expense.date)}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <IconComponent className={`w-4 h-4 mr-2 ${iconColor}`} />
-                          <span className="text-sm font-medium text-gray-900">
-                            {expenseTypes.find(t => t.value === expense.type)?.label}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">{expense.description}</div>
-                        {expense.notes && (
-                          <div className="text-xs text-gray-500 mt-1">{expense.notes}</div>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.employeeName || '-'}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        {formatCurrency(expense.amount)}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.category}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => {
-                            setEditingExpense(expense);
-                            setShowExpenseModal(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteExpense(expense._id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredExpenses.map((expense) => (
+                  <tr key={expense._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(expense.date)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">{expense.description}</div>
+                      {expense.notes && (
+                        <div className="text-xs text-gray-500 mt-1">{expense.notes}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      {formatCurrency(expense.amount)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {expense.category}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => {
+                          setEditingExpense(expense);
+                          setShowExpenseModal(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteExpense(expense._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -614,7 +516,7 @@ const CompanyExpenses = () => {
             <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses found</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || filterType !== 'all' || dateRange.start || dateRange.end
+              {searchTerm || dateRange.start || dateRange.end
                 ? 'Try adjusting your filters' 
                 : 'Add your first expense to get started'
               }
@@ -639,20 +541,6 @@ const CompanyExpenses = () => {
             </h2>
             <form onSubmit={handleExpenseSubmit}>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Expense Type</label>
-                  <select
-                    name="type"
-                    required
-                    defaultValue={editingExpense?.type}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="">Select Type</option>
-                    {expenseTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Date</label>
                   <input
@@ -685,16 +573,6 @@ const CompanyExpenses = () => {
                     defaultValue={editingExpense?.category}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     placeholder="e.g., Office, Operations, etc."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Employee Name</label>
-                  <input
-                    type="text"
-                    name="employeeName"
-                    defaultValue={editingExpense?.employeeName}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="For salary payments"
                   />
                 </div>
                 <div>

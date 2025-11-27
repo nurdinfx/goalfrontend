@@ -304,8 +304,6 @@ const Customers = () => {
     return '';
   };
 
-  
-
   const getVillageFromZone = () => null; // deprecated
 
   // Load data from backend
@@ -799,7 +797,6 @@ const Customers = () => {
           <p className="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">Monthly Payment Tracking System</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          {/* Village management removed */}
           <button
             onClick={() => setShowZoneModal(true)}
             className="bg-indigo-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg flex items-center hover:bg-indigo-700 transition duration-200 text-sm md:text-base flex-1 sm:flex-none justify-center"
@@ -841,7 +838,6 @@ const Customers = () => {
           <p className="text-xs md:text-sm text-gray-600">Unpaid ({new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})</p>
           <p className="text-lg md:text-xl font-semibold">{unpaidCustomers}</p>
         </div>
-        {/* Villages card removed */}
       </div>
 
       {/* Filters */}
@@ -857,7 +853,6 @@ const Customers = () => {
               className="w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
             />
           </div>
-          {/* Village filter removed */}
           <select
             value={zoneFilter}
             onChange={(e) => setZoneFilter(e.target.value)}
@@ -916,7 +911,6 @@ const Customers = () => {
             </div>
             <button
               onClick={() => {
-                // Find if any customer already has a date for this month
                 const customerWithDate = customers.find(c => {
                   const payment = getSelectedMonthPayment(c);
                   return payment.date;
@@ -1002,7 +996,6 @@ const Customers = () => {
                         <Map className="w-4 h-4 mr-2 text-green-500" />
                         {getZoneName(customer)}
                       </div>
-                      {/* Village display removed */}
                       <div className="flex items-center text-sm text-gray-900 mt-2">
                         <DollarSign className="w-4 h-4 mr-2 text-green-500" />
                         ${(() => {
@@ -1051,7 +1044,6 @@ const Customers = () => {
 
                         {/* Payment Details */}
                         <div className="text-sm space-y-1 bg-blue-50 p-2 md:p-3 rounded-lg">
-                          {/* Only show previous balance if not fully paid and there's a balance */}
                           {payment.previousBalance > 0 && !payment.fullyPaid && (
                             <div className="flex justify-between border-b border-blue-200 pb-1 mb-1">
                               <span className="text-xs md:text-sm">Previous Balance:</span>
@@ -1062,14 +1054,12 @@ const Customers = () => {
                             <span className="text-xs md:text-sm">Monthly Fee:</span>
                             <strong className="text-blue-600 text-xs md:text-sm">${payment.monthlyFee}</strong>
                           </div>
-                          {/* Only show Total Due if not fully paid and there's a previous balance */}
                           {payment.previousBalance > 0 && !payment.fullyPaid && (
                             <div className="flex justify-between border-t border-blue-200 pt-1 mt-1">
                               <span className="text-xs md:text-sm font-semibold">Total Due:</span>
                               <strong className="text-purple-600 text-xs md:text-sm">${payment.totalDue.toFixed(2)}</strong>
                             </div>
                           )}
-                          {/* Only show Paid and Remaining if not fully paid */}
                           {!payment.fullyPaid && (
                             <>
                               <div className="flex justify-between">
@@ -1141,7 +1131,7 @@ const Customers = () => {
         )}
       </div>
 
-      {/* Print Section - UPDATED WITH INDEPENDENT MONTHLY TRACKING */}
+      {/* Print Section - UPDATED WITH 50 CUSTOMERS PER PAGE AND EMPTY STATUS */}
       {printData && (
         <div className="print-section hidden print:block">
           {/* Generate pages for printing */}
@@ -1152,10 +1142,10 @@ const Customers = () => {
             
             return (
               <div key={`page-${currentPage}`} className="print-page" style={{ pageBreakAfter: 'always' }}>
-                <div className="p-1">
+                <div className="p-2">
                   {/* Header */}
-                  <div className="text-center mb-1 border-b border-gray-300 pb-0.5">
-                    <h1 className="text-xs font-bold text-gray-900">Customers List</h1>
+                  <div className="text-center mb-2 border-b border-gray-300 pb-1">
+                    <h1 className="text-sm font-bold text-gray-900">Customers List</h1>
                     <p className="text-xs text-gray-600">Generated on {printData.printedDate} at {printData.printedTime}</p>
                     <p className="text-xs text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
                     <p className="text-xs text-gray-600">Month Date: {(() => { const d = getSelectedMonthRealDate(); return d ? new Date(d).toLocaleDateString('en-US') : 'Not set'; })()}</p>
@@ -1165,16 +1155,16 @@ const Customers = () => {
                   </div>
 
                   {/* Customers Table - UPDATED FOR PRINTING - 50 per A4 page */}
-                  <table className="w-full border-collapse border border-gray-300" style={{ fontSize: '6px' }}>
+                  <table className="w-full border-collapse border border-gray-300" style={{ fontSize: '8px' }}>
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '3%' }}>#</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Customer Name</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '12%' }}>Phone Number</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Zone</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '10%' }}>Month Fee</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '10%' }}>Status</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Date</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '4%' }}>#</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '24%' }}>Customer Name</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Phone Number</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Zone</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '12%' }}>Month Fee</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '12%' }}>Status</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1182,43 +1172,34 @@ const Customers = () => {
                         const payment = getSelectedMonthPayment(customer);
                         
                         return (
-                          <tr key={customer._id} style={{ height: '8px' }}>
-                            <td className="border border-gray-300 px-1 py-0.5">{startNumber + index}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 font-medium">{customer.fullName}</td>
-                            <td className="border border-gray-300 px-1 py-0.5">{customer.phoneNumber}</td>
-                            <td className="border border-gray-300 px-1 py-0.5">{getZoneName(customer)}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 text-right">
+                          <tr key={customer._id} style={{ height: '12px' }}>
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{startNumber + index}</td>
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle font-medium">{customer.fullName}</td>
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{customer.phoneNumber}</td>
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{getZoneName(customer)}</td>
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-right">
                               {(() => {
-                                // Check if previous month was fully paid
                                 const prevMonthFullyPaid = isPreviousMonthFullyPaid(customer, selectedMonth);
                                 
-                                // If previous month was fully paid, show only monthly fee (no previous balance)
-                                // This means customer paid everything in previous month, so no carry-over
                                 if (prevMonthFullyPaid) {
                                   return `$${payment.monthlyFee.toFixed(2)}`;
                                 }
                                 
-                                // If customer has a remaining balance from previous month (not fully paid)
-                                // Show only the monthly fee - the previous balance is already included in calculations
-                                // but for display, we show what they need to pay this month
-                                // If there's a previous balance, show total due (previous balance + monthly fee)
                                 if (payment.previousBalance > 0 && !payment.fullyPaid) {
                                   return `$${payment.totalDue.toFixed(2)}`;
                                 }
                                 
-                                // If current month is fully paid, show only monthly fee (previous balance was cleared)
                                 if (payment.fullyPaid) {
                                   return `$${payment.monthlyFee.toFixed(2)}`;
                                 }
                                 
-                                // No previous balance, show only monthly fee
                                 return `$${payment.monthlyFee.toFixed(2)}`;
                               })()}
                             </td>
-                            <td className="border border-gray-300 px-1 py-0.5 text-center">
-                              
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-center">
+                              {/* Status column is EMPTY for manual entry */}
                             </td>
-                            <td className="border border-gray-300 px-1 py-0.5 text-center">
+                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-center">
                               {/* Date field is always empty in print view for manual entry */}
                             </td>
                           </tr>
@@ -1227,9 +1208,10 @@ const Customers = () => {
                     </tbody>
                   </table>
 
-                  {/* Page Footer */}
-                  <div className="mt-0.5 text-center text-xs text-gray-500 border-t border-gray-300 pt-0.5">
-                    <p className="text-xs">Page {currentPage} of {totalPrintPages} - {pageCustomers.length} customers</p>
+                  {/* Page Footer with Company Name */}
+                  <div className="mt-2 text-center border-t border-gray-300 pt-1">
+                    <p className="text-xs text-gray-500 mb-0.5">Page {currentPage} of {totalPrintPages} - {pageCustomers.length} customers</p>
+                    <p className="text-xs font-semibold text-gray-700">powered by HUDI SOMPROJECT</p>
                   </div>
                 </div>
               </div>
@@ -1311,7 +1293,6 @@ const Customers = () => {
                     const payment = getSelectedMonthPayment(selectedCustomer);
                     return (
                       <>
-                        {/* Only show previous balance if not fully paid and there's a balance */}
                         {payment.previousBalance > 0 && !payment.fullyPaid && (
                           <div className="flex justify-between border-b border-blue-200 pb-2">
                             <span className="text-sm">Previous Balance:</span>
@@ -1322,14 +1303,12 @@ const Customers = () => {
                           <span className="text-sm">Monthly Fee:</span>
                           <strong className="text-blue-600">${payment.monthlyFee}</strong>
                         </div>
-                        {/* Only show Total Due if not fully paid and there's a previous balance */}
                         {payment.previousBalance > 0 && !payment.fullyPaid && (
                           <div className="flex justify-between border-t border-blue-200 pt-2 font-semibold">
                             <span className="text-sm">Total Due:</span>
                             <strong className="text-purple-600">${payment.totalDue.toFixed(2)}</strong>
                           </div>
                         )}
-                        {/* Only show Paid and Remaining if not fully paid */}
                         {!payment.fullyPaid && (
                           <>
                             <div className="flex justify-between">
@@ -1507,166 +1486,6 @@ const Customers = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Village Management Modal */}
-      {false && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
-          <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Manage Villages</h2>
-              <button
-                onClick={() => {
-                  setShowVillageModal(false);
-                  setEditingVillage(null);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Add/Edit Village Form */}
-            <div className="mb-4 md:mb-6">
-              <h3 className="text-lg font-semibold mb-3 md:mb-4">
-                {editingVillage ? 'Edit Village' : 'Add New Village'}
-              </h3>
-              <form onSubmit={handleVillageSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Village Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    defaultValue={editingVillage?.name}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter village name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Village Code *
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    required
-                    defaultValue={editingVillage?.code}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter code (e.g., ZA)"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    rows="3"
-                    defaultValue={editingVillage?.description}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter village description"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Monthly Fee ($) *
-                  </label>
-                  <input
-                    type="number"
-                    name="monthlyFee"
-                    required
-                    min="0"
-                    step="0.01"
-                    defaultValue={editingVillage?.monthlyFee || 1000}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter monthly fee"
-                  />
-                </div>
-                <div className="md:col-span-2 flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setEditingVillage(null)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Cancel Edit
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? 'Saving...' : (editingVillage ? 'Update' : 'Add') + ' Village'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Villages List */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3 md:mb-4">Existing Villages ({villages.length})</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                {villages.map(village => {
-                  const villageZones = zones.filter(z => z.villageId === village._id);
-                  const villageCustomers = customers.filter(c => {
-                    const zone = zones.find(z => z._id === c.zoneId);
-                    return zone && zone.villageId === village._id;
-                  });
-                  const isDeleteLoading = actionLoading === `delete-village-${village._id}`;
-                  
-                  return (
-                    <div key={village._id} className="bg-gray-50 p-3 md:p-4 rounded-lg border border-gray-200">
-                      <div className="flex justify-between items-start mb-2 md:mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{village.name}</h4>
-                          <p className="text-sm text-gray-600">Code: {village.code}</p>
-                          {village.description && (
-                            <p className="text-sm text-gray-600 mt-1">{village.description}</p>
-                          )}
-                        </div>
-                        <div className="flex space-x-1 md:space-x-2">
-                          <button
-                            onClick={() => setEditingVillage(village)}
-                            className="text-blue-600 hover:text-blue-800"
-                            title="Edit Village"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteVillage(village._id)}
-                            disabled={isDeleteLoading}
-                            className={`text-red-600 hover:text-red-800 ${isDeleteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            title="Delete Village"
-                          >
-                            {isDeleteLoading ? (
-                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <p>Zones: <strong>{villageZones.length}</strong></p>
-                        <p>Customers: <strong>{villageCustomers.length}</strong></p>
-                        <p>Monthly Fee: <strong>${village.monthlyFee}</strong></p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {villages.length === 0 && (
-                <div className="text-center py-6 md:py-8">
-                  <Building className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" />
-                  <p className="text-gray-600">No villages added yet. Create your first village above.</p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
@@ -1885,48 +1704,46 @@ const Customers = () => {
             .print-section table {
               width: 100%;
               border-collapse: collapse;
-              font-size: 6px;
+              font-size: 8px;
               table-layout: fixed;
             }
             .print-section thead th {
               border: 1px solid #000;
-              padding: 1px 2px;
+              padding: 4px 2px;
               text-align: left;
-              line-height: 1;
               background-color: #f0f0f0;
               font-weight: bold;
-              font-size: 6px;
-              height: 8px;
+              font-size: 8px;
+              height: 15px;
             }
             .print-section tbody td {
               border: 1px solid #000;
-              padding: 1px 2px;
+              padding: 3px 2px;
               text-align: left;
-              line-height: 1;
-              font-size: 6px;
-              height: 8px;
+              font-size: 8px;
+              height: 12px;
               vertical-align: middle;
             }
             .print-section h1 {
-              font-size: 10px;
-              margin: 0.05cm 0;
+              font-size: 14px;
+              margin: 5px 0;
               line-height: 1.2;
             }
             .print-section p {
-              font-size: 6px;
-              margin: 0.02cm 0;
+              font-size: 8px;
+              margin: 3px 0;
               line-height: 1.2;
             }
             .print-section .print-page > div {
-              padding: 0.2cm;
+              padding: 10px;
             }
             .print-section .border-b {
-              padding-bottom: 0.1cm;
-              margin-bottom: 0.1cm;
+              padding-bottom: 5px;
+              margin-bottom: 5px;
             }
             .print-section .border-t {
-              padding-top: 0.1cm;
-              margin-top: 0.1cm;
+              padding-top: 5px;
+              margin-top: 5px;
             }
           }
         `}

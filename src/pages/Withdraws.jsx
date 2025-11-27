@@ -1,4 +1,3 @@
-// pages/Withdrawals.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, Search, DollarSign, Calendar, FileText, CheckCircle, XCircle, Clock, Loader, Download, Printer } from 'lucide-react';
 import { apiService } from '../services/api';
@@ -17,13 +16,9 @@ const Withdrawals = () => {
   const [editingWithdrawal, setEditingWithdrawal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all');
   const [stats, setStats] = useState({
     totalWithdrawn: 0,
-    pendingCount: 0,
-    approvedCount: 0,
-    completedCount: 0,
-    rejectedCount: 0
+    totalCount: 0
   });
 
   const printRef = useRef();
@@ -59,17 +54,11 @@ const Withdrawals = () => {
 
   const calculateStats = (withdrawalsData) => {
     const totalWithdrawn = withdrawalsData.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
-    const pendingCount = withdrawalsData.filter(w => w.status === 'pending').length;
-    const approvedCount = withdrawalsData.filter(w => w.status === 'approved').length;
-    const completedCount = withdrawalsData.filter(w => w.status === 'completed').length;
-    const rejectedCount = withdrawalsData.filter(w => w.status === 'rejected').length;
+    const totalCount = withdrawalsData.length;
     
     setStats({
       totalWithdrawn,
-      pendingCount,
-      approvedCount,
-      completedCount,
-      rejectedCount
+      totalCount
     });
   };
 
@@ -87,8 +76,7 @@ const Withdrawals = () => {
         bankName: formData.get('bankName'),
         accountNumber: formData.get('accountNumber'),
       },
-      notes: formData.get('notes'),
-      status: editingWithdrawal ? formData.get('status') : 'pending'
+      notes: formData.get('notes')
     };
 
     // Validate required fields
@@ -136,39 +124,37 @@ const Withdrawals = () => {
     }
   };
 
-  const handleStatusUpdate = async (withdrawalId, newStatus) => {
-    try {
-      const result = await apiService.updateWithdrawStatus(withdrawalId, { status: newStatus });
-      
-      // FIX: More flexible response handling
-      if (result && (result.data || result._id)) {
-        const updatedWithdrawal = result.data || result;
-        setWithdrawals(prev => prev.map(w => 
-          w._id === withdrawalId ? updatedWithdrawal : w
-        ));
-        calculateStats(withdrawals.map(w => w._id === withdrawalId ? updatedWithdrawal : w));
-        alert(`Withdrawal status updated to ${newStatus}!`);
-      } else {
-        throw new Error('Invalid response from server');
-      }
-    } catch (error) {
-      console.error('Error updating withdrawal status:', error);
-      alert('Error updating withdrawal status: ' + (error.message || 'Please try again'));
-    }
-  };
-
   const handleDeleteWithdrawal = async (withdrawalId) => {
     if (window.confirm('Are you sure you want to delete this withdrawal?')) {
       try {
-        const result = await apiService.deleteWithdraw(withdrawalId);
+        console.log('Deleting withdrawal with ID:', withdrawalId);
         
-        if (result && (result.success || result.data)) {
+        const result = await apiService.deleteWithdraw(withdrawalId);
+        console.log('Delete response:', result);
+        
+        // FIX: Handle different response formats
+        if (result) {
+          // If result has success property and it's true, or if we get any response at all
+          if ((result.success !== undefined && result.success) || result._id) {
+            const updatedWithdrawals = withdrawals.filter(w => w._id !== withdrawalId);
+            setWithdrawals(updatedWithdrawals);
+            calculateStats(updatedWithdrawals);
+            alert('Withdrawal deleted successfully!');
+          } else if (result.success === false) {
+            throw new Error(result.message || 'Failed to delete withdrawal');
+          } else {
+            // If we get here but no error was thrown, assume success
+            const updatedWithdrawals = withdrawals.filter(w => w._id !== withdrawalId);
+            setWithdrawals(updatedWithdrawals);
+            calculateStats(updatedWithdrawals);
+            alert('Withdrawal deleted successfully!');
+          }
+        } else {
+          // If result is undefined but no error was thrown, assume success
           const updatedWithdrawals = withdrawals.filter(w => w._id !== withdrawalId);
           setWithdrawals(updatedWithdrawals);
           calculateStats(updatedWithdrawals);
           alert('Withdrawal deleted successfully!');
-        } else {
-          throw new Error('Failed to delete withdrawal');
         }
       } catch (error) {
         console.error('Error deleting withdrawal:', error);
@@ -184,25 +170,8 @@ const Withdrawals = () => {
       (withdrawal.bankDetails?.accountHolder?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (withdrawal.bankDetails?.bankName?.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'all' || withdrawal.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
-
-  const getStatusInfo = (status) => {
-    switch (status) {
-      case 'pending':
-        return { icon: <Clock className="w-4 h-4" />, color: 'bg-yellow-100 text-yellow-800 border border-yellow-200' };
-      case 'approved':
-        return { icon: <CheckCircle className="w-4 h-4" />, color: 'bg-blue-100 text-blue-800 border border-blue-200' };
-      case 'completed':
-        return { icon: <CheckCircle className="w-4 h-4" />, color: 'bg-green-100 text-green-800 border border-green-200' };
-      case 'rejected':
-        return { icon: <XCircle className="w-4 h-4" />, color: 'bg-red-100 text-red-800 border border-red-200' };
-      default:
-        return { icon: <Clock className="w-4 h-4" />, color: 'bg-gray-100 text-gray-800 border border-gray-200' };
-    }
-  };
 
   const categories = [
     { value: 'investment', label: 'Business Investment' },
@@ -286,17 +255,6 @@ const Withdrawals = () => {
             tr:nth-child(even) {
               background-color: #f8f9fa;
             }
-            .status {
-              padding: 4px 8px;
-              border-radius: 12px;
-              font-size: 10px;
-              font-weight: bold;
-              text-transform: capitalize;
-            }
-            .status-pending { background: #fef3cd; color: #856404; }
-            .status-approved { background: #cce7ff; color: #004085; }
-            .status-completed { background: #d4edda; color: #155724; }
-            .status-rejected { background: #f8d7da; color: #721c24; }
             .footer {
               margin-top: 30px;
               text-align: center;
@@ -323,20 +281,8 @@ const Withdrawals = () => {
               <div class="summary-label">Total Withdrawn</div>
             </div>
             <div class="summary-item">
-              <div class="summary-value">${stats.pendingCount}</div>
-              <div class="summary-label">Pending</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-value">${stats.approvedCount}</div>
-              <div class="summary-label">Approved</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-value">${stats.completedCount}</div>
-              <div class="summary-label">Completed</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-value">${stats.rejectedCount}</div>
-              <div class="summary-label">Rejected</div>
+              <div class="summary-value">${stats.totalCount}</div>
+              <div class="summary-label">Total Withdrawals</div>
             </div>
           </div>
 
@@ -347,7 +293,6 @@ const Withdrawals = () => {
                 <th>Description</th>
                 <th>Amount</th>
                 <th>Bank Name</th>
-                <th>Status</th>
                 <th>Date</th>
               </tr>
             </thead>
@@ -363,9 +308,6 @@ const Withdrawals = () => {
                   <td>
                     <div>${withdrawal.bankDetails?.bankName || 'N/A'}</div>
                     <div style="color: #666; font-size: 10px;">${withdrawal.bankDetails?.accountHolder || 'N/A'}</div>
-                  </td>
-                  <td>
-                    <span class="status status-${withdrawal.status}">${withdrawal.status}</span>
                   </td>
                   <td>${withdrawal.withdrawDate ? new Date(withdrawal.withdrawDate).toLocaleDateString() : 'N/A'}</td>
                 </tr>
@@ -422,37 +364,22 @@ const Withdrawals = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-center">
           <DollarSign className="w-6 h-6 text-green-500 mx-auto mb-2" />
           <p className="text-xs text-gray-600">Total Withdrawn</p>
           <p className="text-lg font-semibold">{formatCurrency(stats.totalWithdrawn)}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-center">
-          <Clock className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
-          <p className="text-xs text-gray-600">Pending</p>
-          <p className="text-lg font-semibold">{stats.pendingCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-center">
-          <CheckCircle className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-          <p className="text-xs text-gray-600">Approved</p>
-          <p className="text-lg font-semibold">{stats.approvedCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-center">
-          <CheckCircle className="w-6 h-6 text-green-500 mx-auto mb-2" />
-          <p className="text-xs text-gray-600">Completed</p>
-          <p className="text-lg font-semibold">{stats.completedCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 text-center">
-          <XCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
-          <p className="text-xs text-gray-600">Rejected</p>
-          <p className="text-lg font-semibold">{stats.rejectedCount}</p>
+          <FileText className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+          <p className="text-xs text-gray-600">Total Withdrawals</p>
+          <p className="text-lg font-semibold">{stats.totalCount}</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
             <div className="relative">
@@ -465,20 +392,6 @@ const Withdrawals = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="completed">Completed</option>
-              <option value="rejected">Rejected</option>
-            </select>
           </div>
         </div>
       </div>
@@ -499,97 +412,62 @@ const Withdrawals = () => {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Details</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredWithdrawals.map(withdrawal => {
-                  const statusInfo = getStatusInfo(withdrawal.status);
-                  
-                  return (
-                    <tr key={withdrawal._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {withdrawal.referenceNumber || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm font-medium text-gray-900">{withdrawal.description}</div>
-                        <div className="text-xs text-gray-500 capitalize">
-                          {withdrawal.category?.replace('_', ' ') || 'other'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm font-semibold text-red-600">
-                        {formatCurrency(withdrawal.amount)}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">
-                          {withdrawal.bankDetails?.bankName || 'N/A'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {withdrawal.bankDetails?.accountHolder || 'N/A'}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {withdrawal.bankDetails?.accountNumber ? `****${withdrawal.bankDetails.accountNumber.slice(-4)}` : 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                          {statusInfo.icon}
-                          <span className="ml-1 capitalize">{withdrawal.status}</span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-900">
-                        {withdrawal.withdrawDate ? new Date(withdrawal.withdrawDate).toLocaleDateString() : 'N/A'}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {withdrawal.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => handleStatusUpdate(withdrawal._id, 'approved')}
-                                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleStatusUpdate(withdrawal._id, 'rejected')}
-                                className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          {withdrawal.status === 'approved' && (
-                            <button
-                              onClick={() => handleStatusUpdate(withdrawal._id, 'completed')}
-                              className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                            >
-                              Complete
-                            </button>
-                          )}
-                          <button
-                            onClick={() => {
-                              setEditingWithdrawal(withdrawal);
-                              setShowWithdrawalModal(true);
-                            }}
-                            className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteWithdrawal(withdrawal._id)}
-                            className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredWithdrawals.map(withdrawal => (
+                  <tr key={withdrawal._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {withdrawal.referenceNumber || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">{withdrawal.description}</div>
+                      <div className="text-xs text-gray-500 capitalize">
+                        {withdrawal.category?.replace('_', ' ') || 'other'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-sm font-semibold text-red-600">
+                      {formatCurrency(withdrawal.amount)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {withdrawal.bankDetails?.bankName || 'N/A'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {withdrawal.bankDetails?.accountHolder || 'N/A'}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {withdrawal.bankDetails?.accountNumber ? `****${withdrawal.bankDetails.accountNumber.slice(-4)}` : 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-gray-900">
+                      {withdrawal.withdrawDate ? new Date(withdrawal.withdrawDate).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          onClick={() => {
+                            setEditingWithdrawal(withdrawal);
+                            setShowWithdrawalModal(true);
+                          }}
+                          className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteWithdrawal(withdrawal._id)}
+                          className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -600,20 +478,17 @@ const Withdrawals = () => {
             <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No withdrawals found</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' 
-                ? 'Try adjusting your search or filters' 
+              {searchTerm 
+                ? 'Try adjusting your search terms' 
                 : 'Get started by creating your first withdrawal'
               }
             </p>
-            {(searchTerm || statusFilter !== 'all') && (
+            {searchTerm && (
               <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('all');
-                }}
+                onClick={() => setSearchTerm('')}
                 className="text-blue-600 hover:text-blue-800 text-sm"
               >
-                Clear filters
+                Clear search
               </button>
             )}
           </div>
@@ -717,22 +592,6 @@ const Withdrawals = () => {
                     placeholder="Additional notes (optional)"
                   />
                 </div>
-                {editingWithdrawal && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      name="status"
-                      required
-                      defaultValue={editingWithdrawal?.status || 'pending'}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
-                  </div>
-                )}
               </div>
               <div className="mt-6 flex justify-end space-x-3">
                 <button

@@ -50,10 +50,22 @@ api.interceptors.response.use(
 // ==================== UTILITY HELPERS ====================
 const handleResponse = (response) => {
   const data = response.data;
+  
+  // If response is already an array (like from GET /withdraws), return it directly
+  if (Array.isArray(data)) {
+    return data;
+  }
+  
+  // If response has success property and it's true
   if (data && data.success !== undefined) {
-    if (data.success) return data.data || data;
+    if (data.success) {
+      // Return data property if exists, otherwise return the whole response
+      return data.data !== undefined ? data.data : data;
+    }
     throw new Error(data.message || data.error || 'Request failed');
   }
+  
+  // If no success property, assume it's successful and return the data
   return data;
 };
 
@@ -74,20 +86,29 @@ const callWithdrawEndpoint = async (method, suffix = '', payload = {}, config = 
   for (const base of withdrawBasePaths) {
     try {
       const url = `${base}${suffix}`;
+      let response;
+      
       switch (method) {
         case 'get':
-          return handleResponse(await api.get(url, { params: payload, ...config }));
+          response = await api.get(url, { params: payload, ...config });
+          break;
         case 'post':
-          return handleResponse(await api.post(url, payload, config));
+          response = await api.post(url, payload, config);
+          break;
         case 'put':
-          return handleResponse(await api.put(url, payload, config));
+          response = await api.put(url, payload, config);
+          break;
         case 'patch':
-          return handleResponse(await api.patch(url, payload, config));
+          response = await api.patch(url, payload, config);
+          break;
         case 'delete':
-          return handleResponse(await api.delete(url, config));
+          response = await api.delete(url, config);
+          break;
         default:
           throw new Error(`Unsupported method: ${method}`);
       }
+      
+      return handleResponse(response);
     } catch (error) {
       lastError = error;
       if (error.response?.status !== 404) {
@@ -165,6 +186,108 @@ export const apiService = {
     } catch (error) {
       console.error('❌ Error deleting village:', error.message);
       throw new Error(formatError(error, 'Failed to delete village'));
+    }
+  },
+
+  // -------------------- VILLAGE COLLECTIONS --------------------
+  getVillageCollections: async (params = {}) => {
+    try {
+      const response = await api.get('/village-collections', { params });
+      return toArray(handleResponse(response));
+    } catch (error) {
+      if (error.response?.status === 404) {
+        try {
+          const raw = localStorage.getItem('villageCollections');
+          const data = raw ? JSON.parse(raw) : [];
+          return Array.isArray(data) ? data : [];
+        } catch {
+          return [];
+        }
+      }
+      console.error('❌ Error fetching village collections:', error.message);
+      throw new Error(formatError(error, 'Failed to load village collections'));
+    }
+  },
+
+  createVillageCollection: async (payload) => {
+    try {
+      const response = await api.post('/village-collections', payload);
+      return handleResponse(response);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        try {
+          const raw = localStorage.getItem('villageCollections');
+          const arr = raw ? JSON.parse(raw) : [];
+          const item = {
+            _id: 'local-' + Date.now(),
+            villageId: null,
+            villageName: payload.villageName,
+            date: payload.date,
+            householdsCollected: Number(payload.customers) || 0,
+            amountCollected: Number(payload.amountCollected) || 0
+          };
+          const next = [item, ...arr];
+          localStorage.setItem('villageCollections', JSON.stringify(next));
+          return item;
+        } catch (e) {
+          throw new Error('Failed to create village collection');
+        }
+      }
+      console.error('❌ Error creating village collection:', error.message);
+      throw new Error(formatError(error, 'Failed to create village collection'));
+    }
+  },
+
+  deleteVillageCollection: async (id) => {
+    try {
+      const response = await api.delete(`/village-collections/${id}`);
+      return handleResponse(response);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        try {
+          const raw = localStorage.getItem('villageCollections');
+          const arr = raw ? JSON.parse(raw) : [];
+          const next = arr.filter(i => i._id !== id);
+          localStorage.setItem('villageCollections', JSON.stringify(next));
+          return { success: true };
+        } catch (e) {
+          throw new Error('Failed to delete village collection');
+        }
+      }
+      console.error('❌ Error deleting village collection:', error.message);
+      throw new Error(formatError(error, 'Failed to delete village collection'));
+    }
+  },
+
+  updateVillageCollection: async (id, payload) => {
+    try {
+      const response = await api.put(`/village-collections/${id}`, payload);
+      return handleResponse(response);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        try {
+          const raw = localStorage.getItem('villageCollections');
+          const arr = raw ? JSON.parse(raw) : [];
+          const idx = arr.findIndex(i => i._id === id);
+          if (idx !== -1) {
+            const updated = {
+              ...arr[idx],
+              villageName: payload.villageName ?? arr[idx].villageName,
+              date: payload.date ?? arr[idx].date,
+              householdsCollected: (payload.customers !== undefined ? Number(payload.customers) : arr[idx].householdsCollected),
+              amountCollected: (payload.amountCollected !== undefined ? Number(payload.amountCollected) : arr[idx].amountCollected)
+            };
+            arr[idx] = updated;
+            localStorage.setItem('villageCollections', JSON.stringify(arr));
+            return updated;
+          }
+          throw new Error('Collection not found');
+        } catch (e) {
+          throw new Error('Failed to update village collection');
+        }
+      }
+      console.error('❌ Error updating village collection:', error.message);
+      throw new Error(formatError(error, 'Failed to update village collection'));
     }
   },
 
@@ -459,16 +582,6 @@ export const apiService = {
     }
   },
 
-  updateWithdrawStatus: async (id, payload) => {
-    try {
-      const response = await callWithdrawEndpoint('patch', `/${id}/status`, payload);
-      return response;
-    } catch (error) {
-      console.error('❌ Error updating withdrawal status:', error.message);
-      throw new Error(formatError(error, 'Failed to update withdrawal status'));
-    }
-  },
-
   deleteWithdraw: async (id) => {
     try {
       const response = await callWithdrawEndpoint('delete', `/${id}`);
@@ -663,7 +776,4 @@ export const apiService = {
   })
 };
 
-// Provide both a named and a default export so any import style works
-// (`import { apiService }` or `import apiService`).
 export default apiService;
-
