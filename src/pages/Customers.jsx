@@ -740,7 +740,7 @@ const Customers = () => {
     }
   };
 
-  // Print function - Updated for pagination
+  // Print function - Updated for zone-specific printing
   const handlePrintCustomerList = () => {
     const selectedZone = zoneFilter !== 'all' ? zones.find(z => z._id === zoneFilter) : null;
     
@@ -754,7 +754,8 @@ const Customers = () => {
       },
       printedDate: new Date().toLocaleDateString(),
       printedTime: new Date().toLocaleTimeString(),
-      totalCount: filteredCustomers.length
+      totalCount: filteredCustomers.length,
+      zoneName: selectedZone?.name || null
     });
 
     // Use setTimeout to ensure state is updated before printing
@@ -1131,7 +1132,7 @@ const Customers = () => {
         )}
       </div>
 
-      {/* Print Section - UPDATED WITH 50 CUSTOMERS PER PAGE AND EMPTY STATUS */}
+      {/* Print Section - UPDATED WITH ZONE-SPECIFIC TITLES AND REMOVED ZONE COLUMN */}
       {printData && (
         <div className="print-section hidden print:block">
           {/* Generate pages for printing */}
@@ -1143,9 +1144,13 @@ const Customers = () => {
             return (
               <div key={`page-${currentPage}`} className="print-page" style={{ pageBreakAfter: 'always' }}>
                 <div className="p-2">
-                  {/* Header */}
+                  {/* Header - UPDATED: Shows zone name when printing a specific zone */}
                   <div className="text-center mb-2 border-b border-gray-300 pb-1">
-                    <h1 className="text-sm font-bold text-gray-900">Customers List</h1>
+                    <h1 className="text-sm font-bold text-gray-900">
+                      {printData.zoneName 
+                        ? `${printData.zoneName} - Customers List` 
+                        : 'Customers List'}
+                    </h1>
                     <p className="text-xs text-gray-600">Generated on {printData.printedDate} at {printData.printedTime}</p>
                     <p className="text-xs text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
                     <p className="text-xs text-gray-600">Month Date: {(() => { const d = getSelectedMonthRealDate(); return d ? new Date(d).toLocaleDateString('en-US') : 'Not set'; })()}</p>
@@ -1154,16 +1159,15 @@ const Customers = () => {
                     </p>
                   </div>
 
-                  {/* Customers Table - UPDATED FOR PRINTING - 50 per A4 page */}
+                  {/* Customers Table - UPDATED: REMOVED ZONE COLUMN */}
                   <table className="w-full border-collapse border border-gray-300" style={{ fontSize: '8px' }}>
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '4%' }}>#</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '24%' }}>Customer Name</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Phone Number</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Zone</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '12%' }}>Month Fee</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '12%' }}>Status</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '6%' }}>#</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '30%' }}>Customer Name</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Phone Number</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '16%' }}>Month Fee</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Status</th>
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Date</th>
                       </tr>
                     </thead>
@@ -1176,7 +1180,6 @@ const Customers = () => {
                             <td className="border border-gray-300 px-1 py-0.5 align-middle">{startNumber + index}</td>
                             <td className="border border-gray-300 px-1 py-0.5 align-middle font-medium">{customer.fullName}</td>
                             <td className="border border-gray-300 px-1 py-0.5 align-middle">{customer.phoneNumber}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{getZoneName(customer)}</td>
                             <td className="border border-gray-300 px-1 py-0.5 align-middle text-right">
                               {(() => {
                                 const prevMonthFullyPaid = isPreviousMonthFullyPaid(customer, selectedMonth);

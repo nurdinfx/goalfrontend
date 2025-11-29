@@ -927,7 +927,7 @@ const Zones = () => {
           </div>
         </div>
 
-        {/* Zones Table - Updated with Village and Collection Day */}
+        {/* Zones Table - Updated column order as requested */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -936,10 +936,10 @@ const Zones = () => {
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">#</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[150px]">Zone Details</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Customers</th>
-                  <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">% of Total</th>
-                  <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Revenue</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Paid</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Unpaid</th>
+                  <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">% of Total</th>
+                  <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Revenue</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Net Profit</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[100px]">Collection</th>
                   <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
@@ -984,6 +984,20 @@ const Zones = () => {
                           {stats.totalCustomers}
                         </div>
                       </td>
+
+                      {/* Paid Customers */}
+                      <td className="px-3 py-4">
+                        <div className="text-sm text-green-600 font-semibold text-center">
+                          {stats.paidCustomers}
+                        </div>
+                      </td>
+                      
+                      {/* Unpaid Customers */}
+                      <td className="px-3 py-4">
+                        <div className="text-sm text-red-600 font-semibold text-center">
+                          {stats.unpaidCustomers}
+                        </div>
+                      </td>
                       
                       {/* Percentage of Customers */}
                       <td className="px-3 py-4">
@@ -996,20 +1010,6 @@ const Zones = () => {
                       <td className="px-3 py-4">
                         <div className="text-sm text-blue-600 font-semibold text-center">
                           {formatCurrency(stats.totalRevenue)}
-                        </div>
-                      </td>
-                      
-                      {/* Paid Customers */}
-                      <td className="px-3 py-4">
-                        <div className="text-sm text-green-600 font-semibold text-center">
-                          {stats.paidCustomers}
-                        </div>
-                      </td>
-                      
-                      {/* Unpaid Customers */}
-                      <td className="px-3 py-4">
-                        <div className="text-sm text-red-600 font-semibold text-center">
-                          {stats.unpaidCustomers}
                         </div>
                       </td>
                       
@@ -1327,9 +1327,10 @@ const Zones = () => {
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">#</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Zone Name</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Customers</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Revenue</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Paid</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Unpaid</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">% of Total</th>
+                    <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Revenue</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Net Profit</th>
                     <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Collection Rate</th>
                   </tr>
@@ -1342,9 +1343,10 @@ const Zones = () => {
                         <td className="border border-gray-300 px-3 py-2 text-sm">{zone.listNumber}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{zone.name}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{stats.totalCustomers}</td>
-                        <td className="border border-gray-300 px-3 py-2 text-sm">{formatCurrency(stats.totalRevenue)}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{stats.paidCustomers}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{stats.unpaidCustomers}</td>
+                        <td className="border border-gray-300 px-3 py-2 text-sm">{stats.customerPercentage.toFixed(1)}%</td>
+                        <td className="border border-gray-300 px-3 py-2 text-sm">{formatCurrency(stats.totalRevenue)}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{formatCurrency(stats.netProfit)}</td>
                         <td className="border border-gray-300 px-3 py-2 text-sm">{stats.collectionRate.toFixed(1)}%</td>
                       </tr>
