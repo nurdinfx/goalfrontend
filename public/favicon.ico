@@ -1,0 +1,3 @@
+Placeholder favicon file.
+The app uses SPA routing; this file only exists to prevent 404s in the browser console.
+
