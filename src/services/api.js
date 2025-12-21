@@ -50,12 +50,20 @@ api.interceptors.response.use(
 // ==================== UTILITY HELPERS ====================
 const handleResponse = (response) => {
   const data = response.data;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
   // If response is already an array (like from GET /withdraws), return it directly
   if (Array.isArray(data)) {
     return data;
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
   // If response has success property and it's true
   if (data && data.success !== undefined) {
     if (data.success) {
@@ -64,7 +72,11 @@ const handleResponse = (response) => {
     }
     throw new Error(data.message || data.error || 'Request failed');
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
   // If no success property, assume it's successful and return the data
   return data;
 };
@@ -87,7 +99,11 @@ const callWithdrawEndpoint = async (method, suffix = '', payload = {}, config = 
     try {
       const url = `${base}${suffix}`;
       let response;
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       switch (method) {
         case 'get':
           response = await api.get(url, { params: payload, ...config });
@@ -107,7 +123,11 @@ const callWithdrawEndpoint = async (method, suffix = '', payload = {}, config = 
         default:
           throw new Error(`Unsupported method: ${method}`);
       }
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       return handleResponse(response);
     } catch (error) {
       lastError = error;
@@ -376,7 +396,10 @@ export const apiService = {
       const backendWorkerData = {
         fullName: workerData.fullName,
         phoneNumber: workerData.phoneNumber,
+<<<<<<< HEAD
         email: workerData.email || '',
+=======
+>>>>>>> ddb7805 (initial frontend commit)
         address: workerData.address || 'Not provided',
         salary: workerData.salary,
         position: workerData.position || 'Worker',
@@ -398,7 +421,10 @@ export const apiService = {
       const backendWorkerData = {
         fullName: workerData.fullName,
         phoneNumber: workerData.phoneNumber,
+<<<<<<< HEAD
         email: workerData.email || '',
+=======
+>>>>>>> ddb7805 (initial frontend commit)
         address: workerData.address || 'Not provided',
         salary: workerData.salary,
         position: workerData.position || 'Worker',

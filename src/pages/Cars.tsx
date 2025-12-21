@@ -22,7 +22,11 @@ const Cars = () => {
   const [printData, setPrintData] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [formErrors, setFormErrors] = useState({});
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
   const [showExpenseHistoryModal, setShowExpenseHistoryModal] = useState(false);
   const [expenseHistoryCar, setExpenseHistoryCar] = useState(null);
 
@@ -122,6 +126,7 @@ const Cars = () => {
   // Validate car form
   const validateCarForm = (formData) => {
     const errors = {};
+<<<<<<< HEAD
     
     if (!formData.plateNumber?.trim()) {
       errors.plateNumber = 'Plate number is required';
@@ -131,12 +136,24 @@ const Cars = () => {
       errors.carType = 'Car type is required';
     }
     
+=======
+
+    if (!formData.plateNumber?.trim()) {
+      errors.plateNumber = 'Plate number is required';
+    }
+
+    if (!formData.carType?.trim()) {
+      errors.carType = 'Car type is required';
+    }
+
+>>>>>>> ddb7805 (initial frontend commit)
     return errors;
   };
 
   // Validate expense form
   const validateExpenseForm = (formData) => {
     const errors = {};
+<<<<<<< HEAD
     
     if (!formData.amount || formData.amount <= 0) {
       errors.amount = 'Amount must be greater than 0';
@@ -150,6 +167,21 @@ const Cars = () => {
       errors.description = 'Description is required';
     }
     
+=======
+
+    if (!formData.amount || formData.amount <= 0) {
+      errors.amount = 'Amount must be greater than 0';
+    }
+
+    if (!formData.type?.trim()) {
+      errors.type = 'Expense type is required';
+    }
+
+    if (!formData.description?.trim()) {
+      errors.description = 'Description is required';
+    }
+
+>>>>>>> ddb7805 (initial frontend commit)
     if (!formData.expenseDate) {
       errors.expenseDate = 'Expense date is required';
     }
@@ -162,7 +194,11 @@ const Cars = () => {
     e.preventDefault();
     setLoading(true);
     setFormErrors({});
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const formData = new FormData(e.target);
     const carData = {
       plateNumber: formData.get('plateNumber').trim(),
@@ -184,7 +220,11 @@ const Cars = () => {
           method: 'PUT',
           body: JSON.stringify(carData)
         });
+<<<<<<< HEAD
         setCars(prev => prev.map(c => 
+=======
+        setCars(prev => prev.map(c =>
+>>>>>>> ddb7805 (initial frontend commit)
           c._id === editingCar._id ? updatedCar.data : c
         ));
       } else {
@@ -213,7 +253,11 @@ const Cars = () => {
 
     setLoading(true);
     setFormErrors({});
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const formData = new FormData(e.target);
     const expenseData = {
       amount: parseFloat(formData.get('amount')) || 0,
@@ -236,7 +280,11 @@ const Cars = () => {
           method: 'PUT',
           body: JSON.stringify(expenseData)
         });
+<<<<<<< HEAD
         setCars(prev => prev.map(c => 
+=======
+        setCars(prev => prev.map(c =>
+>>>>>>> ddb7805 (initial frontend commit)
           c._id === selectedCar._id ? updatedCar.data : c
         ));
       } else {
@@ -244,7 +292,11 @@ const Cars = () => {
           method: 'POST',
           body: JSON.stringify(expenseData)
         });
+<<<<<<< HEAD
         setCars(prev => prev.map(c => 
+=======
+        setCars(prev => prev.map(c =>
+>>>>>>> ddb7805 (initial frontend commit)
           c._id === selectedCar._id ? updatedCar.data : c
         ));
       }
@@ -279,10 +331,17 @@ const Cars = () => {
   const handleDeleteExpense = async (carId, expenseId) => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
+<<<<<<< HEAD
         const updatedCar = await apiRequest(`/cars/${carId}/expenses/${expenseId}`, { 
           method: 'DELETE' 
         });
         setCars(prev => prev.map(c => 
+=======
+        const updatedCar = await apiRequest(`/cars/${carId}/expenses/${expenseId}`, {
+          method: 'DELETE'
+        });
+        setCars(prev => prev.map(c =>
+>>>>>>> ddb7805 (initial frontend commit)
           c._id === carId ? updatedCar.data : c
         ));
         alert('Expense deleted successfully!');
@@ -305,12 +364,20 @@ const Cars = () => {
     setShowExpenseHistoryModal(true);
   };
 
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
 
   // Print function - FIXED
   const handlePrintCarList = () => {
     const printContent = generatePrintContent();
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -418,9 +485,15 @@ const Cars = () => {
         </body>
       </html>
     `);
+<<<<<<< HEAD
     
     printWindow.document.close();
     
+=======
+
+    printWindow.document.close();
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Wait for content to load before printing
     setTimeout(() => {
       printWindow.print();
@@ -429,6 +502,164 @@ const Cars = () => {
     }, 250);
   };
 
+<<<<<<< HEAD
+=======
+  // Print single car
+  const handlePrintSingleCar = (car) => {
+    const printWindow = window.open('', '_blank');
+    const { totalExpenses } = calculateCarStats(car);
+    const sortedExpenses = getSortedExpenses(car);
+
+    const printContent = `
+      <html>
+        <head>
+          <title>Car Details - ${car.plateNumber}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 40px; 
+              font-size: 14px;
+              line-height: 1.6;
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 40px; 
+              border-bottom: 2px solid #333; 
+              padding-bottom: 20px; 
+            }
+            .car-info {
+              margin-bottom: 30px;
+              background: #f9f9f9;
+              padding: 20px;
+              border-radius: 8px;
+              border: 1px solid #ddd;
+            }
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 15px;
+            }
+            .info-item {
+              margin-bottom: 10px;
+            }
+            .label {
+              font-weight: bold;
+              color: #666;
+              display: block;
+              margin-bottom: 5px;
+            }
+            .value {
+              font-size: 16px;
+              color: #000;
+            }
+            .status {
+              font-weight: bold;
+              text-transform: uppercase;
+            }
+            .status-active { color: #059669; }
+            .status-maintenance { color: #d97706; }
+            .status-inactive { color: #dc2626; }
+            
+            .financials {
+              margin-top: 30px;
+            }
+            .summary-card {
+              border: 1px solid #ddd;
+              padding: 15px;
+              margin-bottom: 20px;
+              border-radius: 8px;
+              text-align: center;
+              background: #f0f7ff;
+            }
+            .expense-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 15px;
+            }
+            .expense-table th, .expense-table td {
+              border: 1px solid #ddd;
+              padding: 10px;
+              text-align: left;
+            }
+            .expense-table th {
+              background-color: #f5f5f5;
+            }
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Car Details</h1>
+            <p>Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+          </div>
+          
+          <div class="car-info">
+            <h2 style="margin-top: 0;">Vehicle Information</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Plate Number</span>
+                <span class="value" style="font-size: 20px; font-weight: bold;">${car.plateNumber}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Car Type</span>
+                <span class="value">${car.carType}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Status</span>
+                <span class="value status status-${car.status}">${car.status}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Total Expense Entries</span>
+                <span class="value">${car.expenses?.length || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="financials">
+            <div class="summary-card">
+              <h3>Total Recorded Expenses</h3>
+              <p style="font-size: 28px; font-weight: bold; margin: 10px 0; color: #2c5282;">$${totalExpenses.toFixed(2)}</p>
+            </div>
+
+            <h3>Expense History</h3>
+            
+            ${sortedExpenses.length > 0 ? `
+              <table class="expense-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${sortedExpenses.map(expense => `
+                    <tr>
+                      <td>${formatExpenseDate(expense.expenseDate || expense.date)}</td>
+                      <td style="text-transform: capitalize;">${expense.type}</td>
+                      <td>${expense.description}</td>
+                      <td>$${Number(expense.amount || 0).toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : '<p>No expenses recorded for this vehicle.</p>'}
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+>>>>>>> ddb7805 (initial frontend commit)
   // Generate print content
   const generatePrintContent = () => {
     const totalCars = cars.length;
@@ -478,12 +709,21 @@ const Cars = () => {
         </thead>
         <tbody>
           ${filteredCars.map((car, index) => {
+<<<<<<< HEAD
             const { totalExpenses } = calculateCarStats(car);
             const sortedExpenses = getSortedExpenses(car);
             const latestExpense = sortedExpenses[0];
             const statusClass = `status-${car.status}`;
             
             return `
+=======
+      const { totalExpenses } = calculateCarStats(car);
+      const sortedExpenses = getSortedExpenses(car);
+      const latestExpense = sortedExpenses[0];
+      const statusClass = `status-${car.status}`;
+
+      return `
+>>>>>>> ddb7805 (initial frontend commit)
               <tr>
                 <td>${index + 1}</td>
                 <td><strong>${car.plateNumber}</strong></td>
@@ -494,7 +734,11 @@ const Cars = () => {
                 <td>${latestExpense ? formatExpenseDate(latestExpense.expenseDate || latestExpense.date) : 'N/A'}</td>
               </tr>
             `;
+<<<<<<< HEAD
           }).join('')}
+=======
+    }).join('')}
+>>>>>>> ddb7805 (initial frontend commit)
         </tbody>
       </table>
 
@@ -531,11 +775,19 @@ const Cars = () => {
         </button>
       </div>
 
+<<<<<<< HEAD
       
 
       {/* Rest of your existing component remains exactly the same */}
       {/* Expense History Modal, Stats, Search and Controls, Cars Table, Modals */}
       
+=======
+
+
+      {/* Rest of your existing component remains exactly the same */}
+      {/* Expense History Modal, Stats, Search and Controls, Cars Table, Modals */}
+
+>>>>>>> ddb7805 (initial frontend commit)
       {/* Expense History Modal */}
       {showExpenseHistoryModal && expenseHistoryCar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
@@ -665,7 +917,11 @@ const Cars = () => {
             <option value={getCurrentMonth()}>Current Month</option>
           </select>
           <div className="flex space-x-2">
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
             <button
               onClick={handlePrintCarList}
               className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-green-700 flex-1"
@@ -705,7 +961,11 @@ const Cars = () => {
                 const { totalExpenses } = calculateCarStats(car);
                 const sortedExpenses = getSortedExpenses(car);
                 const latestExpense = sortedExpenses[0];
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                 return (
                   <tr key={car._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -787,6 +1047,16 @@ const Cars = () => {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
+<<<<<<< HEAD
+=======
+                      <button
+                        onClick={() => handlePrintSingleCar(car)}
+                        className="text-green-600 hover:text-green-900 p-2"
+                        title="Print Car Details"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+>>>>>>> ddb7805 (initial frontend commit)
                     </td>
                   </tr>
                 );
@@ -835,16 +1105,25 @@ const Cars = () => {
                   name="plateNumber"
                   required
                   defaultValue={editingCar?.plateNumber}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.plateNumber ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.plateNumber ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                   placeholder="Enter plate number"
                 />
                 {formErrors.plateNumber && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.plateNumber}</p>
                 )}
               </div>
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Car Type *
@@ -854,9 +1133,14 @@ const Cars = () => {
                   name="carType"
                   required
                   defaultValue={editingCar?.carType}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.carType ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.carType ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                   placeholder="e.g., Sedan, SUV, Truck"
                 />
                 {formErrors.carType && (
@@ -926,9 +1210,14 @@ const Cars = () => {
                   step="0.01"
                   min="0.01"
                   defaultValue={editingExpense?.amount}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.amount ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.amount ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                   placeholder="0.00"
                 />
                 {formErrors.amount && (
@@ -944,9 +1233,14 @@ const Cars = () => {
                   name="type"
                   required
                   defaultValue={editingExpense?.type}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.type ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.type ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                 >
                   <option value="">Select type</option>
                   <option value="maintenance">Maintenance</option>
@@ -969,9 +1263,14 @@ const Cars = () => {
                   name="description"
                   required
                   defaultValue={editingExpense?.description}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.description ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.description ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                   placeholder="What was this expense for?"
                 />
                 {formErrors.description && (
@@ -988,9 +1287,14 @@ const Cars = () => {
                   name="expenseDate"
                   required
                   defaultValue={editingExpense?.expenseDate || new Date().toISOString().split('T')[0]}
+<<<<<<< HEAD
                   className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     formErrors.expenseDate ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
+=======
+                  className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.expenseDate ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
+>>>>>>> ddb7805 (initial frontend commit)
                 />
                 {formErrors.expenseDate && (
                   <p className="text-red-500 text-xs mt-1">{formErrors.expenseDate}</p>

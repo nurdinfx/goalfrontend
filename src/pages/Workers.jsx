@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { Plus, Edit, Trash2, Users, Phone, Mail, Calendar, DollarSign, MapPin, Loader, Printer, Search, RefreshCw, CreditCard, FileText } from 'lucide-react';
 import { apiService } from '../services/api';
 
 const Workers = () => {
+=======
+import { Plus, Edit, Trash2, Users, Phone, Calendar, DollarSign, MapPin, Loader, Printer, Search, RefreshCw, CreditCard, FileText } from 'lucide-react';
+import { apiService } from '../services/api';
+
+const Workers = () => {
+  // Force rebuild - v2
+>>>>>>> ddb7805 (initial frontend commit)
   const [loading, setLoading] = useState(false);
   const [workers, setWorkers] = useState([]);
   const [villages, setVillages] = useState([]);
@@ -34,20 +42,32 @@ const Workers = () => {
         apiService.getWorkers(),
         apiService.getVillages()
       ]);
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       // Load expenses for each worker
       const workersWithExpenses = await Promise.all(
         (workersData || []).map(async (worker) => {
           try {
             const expenses = await apiService.getWorkerExpenses(worker._id);
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
             const sortedExpenses = (expenses || [])
               .map(expense => ({
                 ...expense,
                 date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
               }))
               .sort((a, b) => new Date(b.date) - new Date(a.date));
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
             return {
               ...worker,
               expenses: sortedExpenses
@@ -61,7 +81,11 @@ const Workers = () => {
           }
         })
       );
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setWorkers(workersWithExpenses);
       setVillages(villagesData || []);
     } catch (error) {
@@ -77,7 +101,10 @@ const Workers = () => {
     const searchLower = searchTerm?.toLowerCase() || '';
     return (
       worker?.fullName?.toLowerCase().includes(searchLower) ||
+<<<<<<< HEAD
       worker?.email?.toLowerCase().includes(searchLower) ||
+=======
+>>>>>>> ddb7805 (initial frontend commit)
       worker?.phoneNumber?.includes(searchTerm) ||
       worker?.workerId?.toLowerCase().includes(searchLower)
     );
@@ -85,6 +112,7 @@ const Workers = () => {
 
   // Generate worker ID
   const generateWorkerId = () => {
+<<<<<<< HEAD
     const lastWorker = workers[workers.length - 1];
     if (!lastWorker || !lastWorker.workerId) {
       return 'W001';
@@ -92,13 +120,30 @@ const Workers = () => {
     
     const lastNumber = parseInt(lastWorker.workerId.replace('W', '')) || 0;
     const newNumber = lastNumber + 1;
+=======
+    if (!workers || workers.length === 0) return 'W001';
+
+    // Extract numerical part of IDs and find max
+    const ids = workers.map(w => {
+      if (!w.workerId) return 0;
+      const numPart = parseInt(w.workerId.replace(/^W/, ''), 10);
+      return isNaN(numPart) ? 0 : numPart;
+    });
+
+    const maxId = Math.max(0, ...ids);
+    const newNumber = maxId + 1;
+>>>>>>> ddb7805 (initial frontend commit)
     return `W${newNumber.toString().padStart(3, '0')}`;
   };
 
   // Validate form data
   const validateForm = (formData) => {
     const errors = {};
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     if (!formData.fullName?.trim()) {
       errors.fullName = 'Full name is required';
     }
@@ -111,7 +156,11 @@ const Workers = () => {
     if (!formData.hireDate) {
       errors.hireDate = 'Hire date is required';
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return errors;
   };
 
@@ -121,11 +170,18 @@ const Workers = () => {
     setFormErrors({});
 
     const formData = new FormData(e.target);
+<<<<<<< HEAD
     
     const workerData = {
       fullName: formData.get('fullName').trim(),
       phoneNumber: formData.get('phoneNumber').trim(),
       email: formData.get('email')?.trim() || '',
+=======
+
+    const workerData = {
+      fullName: formData.get('fullName').trim(),
+      phoneNumber: formData.get('phoneNumber').trim(),
+>>>>>>> ddb7805 (initial frontend commit)
       address: formData.get('address')?.trim() || 'Not provided',
       salary: parseFloat(formData.get('salary')) || 0,
       position: formData.get('position') || 'Worker',
@@ -156,7 +212,11 @@ const Workers = () => {
         result = await apiService.createWorker(workerData);
         setWorkers(prev => [...prev, result]);
       }
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setShowModal(false);
       setEditingWorker(null);
       setFormErrors({});
@@ -343,6 +403,177 @@ const Workers = () => {
     ? formatDate(selectedExpenseStats.expenses[0].date)
     : 'N/A';
 
+<<<<<<< HEAD
+=======
+  // Print single worker
+  const handlePrintSingleWorker = (worker) => {
+    const printWindow = window.open('', '_blank');
+    const workerStats = calculateWorkerStats(worker);
+
+    const printContent = `
+      <html>
+        <head>
+          <title>Worker Details - ${worker.fullName}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 40px; 
+              font-size: 14px;
+              line-height: 1.6;
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 40px; 
+              border-bottom: 2px solid #333; 
+              padding-bottom: 20px; 
+            }
+            .worker-info {
+              margin-bottom: 30px;
+              background: #f9f9f9;
+              padding: 20px;
+              border-radius: 8px;
+              border: 1px solid #ddd;
+            }
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 15px;
+            }
+            .info-item {
+              margin-bottom: 10px;
+            }
+            .label {
+              font-weight: bold;
+              color: #666;
+              display: block;
+              margin-bottom: 5px;
+            }
+            .value {
+              font-size: 16px;
+              color: #000;
+            }
+            .financials {
+              margin-top: 30px;
+            }
+            .financial-card {
+              border: 1px solid #ddd;
+              padding: 15px;
+              margin-bottom: 20px;
+              border-radius: 8px;
+            }
+            .expense-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 15px;
+            }
+            .expense-table th, .expense-table td {
+              border: 1px solid #ddd;
+              padding: 10px;
+              text-align: left;
+            }
+            .expense-table th {
+              background-color: #f5f5f5;
+            }
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Worker Details</h1>
+            <p>Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+          </div>
+          
+          <div class="worker-info">
+            <h2 style="margin-top: 0;">Personal Information</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Worker ID</span>
+                <span class="value">${worker.workerId || 'N/A'}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Full Name</span>
+                <span class="value">${worker.fullName}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Phone Number</span>
+                <span class="value">${worker.phoneNumber}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Position</span>
+                <span class="value">${worker.position}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Status</span>
+                <span class="value" style="text-transform: capitalize;">${worker.status}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Hire Date</span>
+                <span class="value">${formatDate(worker.hireDate)}</span>
+              </div>
+              <div class="info-item" style="grid-column: span 2;">
+                <span class="label">Address</span>
+                <span class="value">${worker.address}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="financials">
+            <h2>Financial Summary</h2>
+            <div class="info-grid">
+              <div class="financial-card">
+                <h3>Salary</h3>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0;">$${workerStats.monthlySalary.toFixed(2)}</p>
+                <p style="color: #666;">Monthly Base Salary</p>
+              </div>
+              <div class="financial-card">
+                <h3>Final Payment</h3>
+                <p style="font-size: 24px; font-weight: bold; margin: 10px 0; color: ${workerStats.finalPayment > 0 ? 'green' : 'red'};">$${workerStats.finalPayment.toFixed(2)}</p>
+                <p style="color: #666;">Net Payable Amount</p>
+              </div>
+            </div>
+
+            <h3>Expense History</h3>
+            <div style="margin-bottom: 20px;">
+              <strong>Total Expenses: </strong> $${workerStats.totalExpenses.toFixed(2)}
+            </div>
+            
+            ${workerStats.expenses.length > 0 ? `
+              <table class="expense-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${workerStats.expenses.map(expense => `
+                    <tr>
+                      <td>${formatDate(expense.date)}</td>
+                      <td style="text-transform: capitalize;">${expense.category}</td>
+                      <td>${expense.description}</td>
+                      <td>$${expense.amount.toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            ` : '<p>No expenses recorded.</p>'}
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+>>>>>>> ddb7805 (initial frontend commit)
   // Print all workers - Updated version without status column
   const handlePrintAllWorkers = () => {
     const printWindow = window.open('', '_blank');
@@ -494,12 +725,20 @@ const Workers = () => {
       active: 'bg-green-100 text-green-800',
       inactive: 'bg-gray-100 text-gray-800'
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const statusText = {
       active: 'Active',
       inactive: 'Inactive'
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
         {statusText[status] || 'Unknown'}
@@ -544,6 +783,7 @@ const Workers = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Loading State */}
       {loading && (
         <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded no-print">
@@ -553,6 +793,9 @@ const Workers = () => {
           </div>
         </div>
       )}
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
 
       {/* Workers Statistics - Responsive Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 no-print">
@@ -588,7 +831,11 @@ const Workers = () => {
             </div>
             <input
               type="text"
+<<<<<<< HEAD
               placeholder="Search workers by name, email, or phone..."
+=======
+              placeholder="Search workers by name or phone..."
+>>>>>>> ddb7805 (initial frontend commit)
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-9 sm:pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-sm sm:text-base"
@@ -619,7 +866,11 @@ const Workers = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredWorkers.map((worker, index) => {
                 const workerStats = calculateWorkerStats(worker);
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                 return (
                   <tr key={worker._id} className="hover:bg-gray-50">
                     <td className="px-3 sm:px-4 py-4 text-sm text-gray-500 text-center">
@@ -655,10 +906,13 @@ const Workers = () => {
                           <Phone className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
                           <span className="truncate">{worker.phoneNumber}</span>
                         </div>
+<<<<<<< HEAD
                         <div className="flex items-center">
                           <Mail className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
                           <span className="truncate">{worker.email || 'No email'}</span>
                         </div>
+=======
+>>>>>>> ddb7805 (initial frontend commit)
                       </div>
                     </td>
                     <td className="px-3 sm:px-4 py-4 hidden md:table-cell">
@@ -732,6 +986,16 @@ const Workers = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+<<<<<<< HEAD
+=======
+                        <button
+                          onClick={() => handlePrintSingleWorker(worker)}
+                          className="text-green-600 hover:text-green-800 p-2 rounded transition duration-200 border border-green-200 hover:bg-green-50 flex items-center justify-center"
+                          title="Print Worker Details"
+                        >
+                          <Printer className="w-4 h-4" />
+                        </button>
+>>>>>>> ddb7805 (initial frontend commit)
                       </div>
                     </td>
                   </tr>
@@ -800,9 +1064,14 @@ const Workers = () => {
                       name="fullName"
                       required
                       defaultValue={editingWorker?.fullName}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.fullName ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.fullName ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter full name"
                     />
                     {formErrors.fullName && (
@@ -819,9 +1088,14 @@ const Workers = () => {
                       name="phoneNumber"
                       required
                       defaultValue={editingWorker?.phoneNumber}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.phoneNumber ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.phoneNumber ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter phone number"
                     />
                     {formErrors.phoneNumber && (
@@ -831,6 +1105,7 @@ const Workers = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
+<<<<<<< HEAD
                       Email
                     </label>
                     <input
@@ -844,6 +1119,8 @@ const Workers = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
+=======
+>>>>>>> ddb7805 (initial frontend commit)
                       Position
                     </label>
                     <input
@@ -864,9 +1141,14 @@ const Workers = () => {
                       name="hireDate"
                       required
                       defaultValue={editingWorker?.hireDate ? new Date(editingWorker.hireDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.hireDate ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.hireDate ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                     />
                     {formErrors.hireDate && (
                       <p className="text-red-500 text-xs mt-1">{formErrors.hireDate}</p>
@@ -884,9 +1166,14 @@ const Workers = () => {
                       min="0"
                       step="0.01"
                       defaultValue={editingWorker?.salary || editingWorker?.monthlySalary}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.salary ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.salary ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter salary"
                     />
                     {formErrors.salary && (
@@ -951,7 +1238,11 @@ const Workers = () => {
                   </select>
                 </div>
               </div>
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
               <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
                 <button
                   type="button"

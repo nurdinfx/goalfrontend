@@ -82,7 +82,7 @@ const Customers = () => {
     try {
       console.log(`🔄 API Call: ${options.method || 'GET'} ${API_BASE_URL}${url}`);
       const response = await fetch(`${API_BASE_URL}${url}`, config);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`❌ API Error Response:`, errorText);
@@ -100,10 +100,10 @@ const Customers = () => {
           throw error;
         }
       }
-      
+
       const data = await response.json();
       console.log(`✅ API Success: ${options.method || 'GET'} ${url}`, data);
-      
+
       return data;
     } catch (error) {
       console.error(`❌ API Error: ${options.method || 'GET'} ${url}`, error);
@@ -116,20 +116,20 @@ const Customers = () => {
   // Key logic: If previous month was fully paid, return 0 (no carry-over)
   const getPreviousMonthBalance = (customer, month) => {
     if (!customer || !month) return 0;
-    
+
     const [year, monthNum] = month.split('-').map(Number);
     if (isNaN(year) || isNaN(monthNum)) return 0;
-    
+
     let prevYear = year;
     let prevMonth = monthNum - 1;
-    
+
     if (prevMonth < 1) {
       prevMonth = 12;
       prevYear = year - 1;
     }
-    
+
     const prevMonthStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-    
+
     // Check monthlyPayments first (new structure)
     const prevMonthlyPayment = customer.monthlyPayments?.find(p => p.month === prevMonthStr);
     if (prevMonthlyPayment) {
@@ -141,7 +141,7 @@ const Customers = () => {
       const remaining = prevMonthlyPayment.remaining;
       return (typeof remaining === 'number' && remaining > 0) ? remaining : 0;
     }
-    
+
     // Fallback to old payments structure (backward compatibility)
     const prevPayment = customer.payments?.[prevMonthStr];
     if (prevPayment) {
@@ -153,7 +153,7 @@ const Customers = () => {
       const remaining = prevPayment.remaining;
       return (typeof remaining === 'number' && remaining > 0) ? remaining : 0;
     }
-    
+
     // No previous month data found, return 0 (no carry-over)
     return 0;
   };
@@ -162,32 +162,32 @@ const Customers = () => {
   // This ensures consistent behavior for ALL customers
   const isPreviousMonthFullyPaid = (customer, month) => {
     if (!customer || !month) return false;
-    
+
     const [year, monthNum] = month.split('-').map(Number);
     if (isNaN(year) || isNaN(monthNum)) return false;
-    
+
     let prevYear = year;
     let prevMonth = monthNum - 1;
-    
+
     if (prevMonth < 1) {
       prevMonth = 12;
       prevYear = year - 1;
     }
-    
+
     const prevMonthStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-    
+
     // Check monthlyPayments first (new structure)
     const prevMonthlyPayment = customer.monthlyPayments?.find(p => p.month === prevMonthStr);
     if (prevMonthlyPayment) {
       return prevMonthlyPayment.fullyPaid === true;
     }
-    
+
     // Fallback to old payments structure (backward compatibility)
     const prevPayment = customer.payments?.[prevMonthStr];
     if (prevPayment) {
       return prevPayment.fullyPaid === true;
     }
-    
+
     return false;
   };
 
@@ -208,13 +208,13 @@ const Customers = () => {
         monthlyFee: 0
       };
     }
-    
+
     // Always recalculate previous balance to ensure it's correct for ALL customers
     // This ensures that if previous month was fully paid, we get 0 previous balance
     const previousBalance = getPreviousMonthBalance(customer, selectedMonth);
     const monthlyFee = customer.monthlyFee || 0;
     const totalDue = previousBalance + monthlyFee;
-    
+
     // Check monthlyPayments first (new structure)
     const monthlyPayment = customer.monthlyPayments?.find(p => p.month === selectedMonth);
     if (monthlyPayment) {
@@ -227,7 +227,7 @@ const Customers = () => {
       const recalculatedRemaining = Math.max(0, recalculatedTotalDue - paid);
       // Customer is fully paid if remaining is 0 or explicitly marked as fully paid
       const fullyPaid = recalculatedRemaining <= 0 || monthlyPayment.fullyPaid === true;
-      
+
       return {
         paid: paid,
         remaining: fullyPaid ? 0 : recalculatedRemaining,
@@ -240,12 +240,12 @@ const Customers = () => {
         monthlyFee: paymentMonthlyFee
       };
     }
-    
+
     // Fallback to old payments structure (backward compatibility)
     if (!customer.payments || !customer.payments[selectedMonth]) {
-      return { 
-        paid: 0, 
-        remaining: totalDue, 
+      return {
+        paid: 0,
+        remaining: totalDue,
         fullyPaid: false,
         paidDate: null,
         month: selectedMonth,
@@ -255,14 +255,14 @@ const Customers = () => {
         monthlyFee: monthlyFee
       };
     }
-    
+
     const payment = customer.payments[selectedMonth];
     const paid = typeof payment.paid === 'number' ? payment.paid : 0;
     // Always use recalculated totalDue, not stored value
     // This ensures consistency: if previous month was fully paid, totalDue = monthlyFee only
     const recalculatedRemaining = Math.max(0, totalDue - paid);
     const fullyPaid = recalculatedRemaining <= 0 || payment.fullyPaid === true;
-    
+
     return {
       paid,
       remaining: fullyPaid ? 0 : recalculatedRemaining,
@@ -295,11 +295,11 @@ const Customers = () => {
         zone = zones.find(z => z._id === customer.zoneId);
       }
     }
-    
+
     if (zone) {
       return zone.name || '';
     }
-    
+
     // If no zone, return empty string
     return '';
   };
@@ -315,7 +315,7 @@ const Customers = () => {
     try {
       const savedMonth = localStorage.getItem('selectedMonth');
       if (savedMonth) setSelectedMonth(savedMonth);
-    } catch {}
+    } catch { }
   }, []);
 
   const loadData = async () => {
@@ -325,16 +325,16 @@ const Customers = () => {
         apiRequest('/customers'),
         apiRequest('/zones')
       ]);
-      
+
       // Ensure we have proper array data
       const customersData = Array.isArray(customersResponse) ? customersResponse : (customersResponse.data || []);
       const zonesData = Array.isArray(zonesResponse) ? zonesResponse : (zonesResponse.data || []);
-      
+
       setCustomers(customersData);
       setZones(zonesData);
-      
+
       console.log(`✅ Loaded ${customersData.length} customers and ${zonesData.length} zones`);
-      
+
     } catch (error) {
       console.error('Error loading data:', error);
       alert('Error loading data: ' + error.message);
@@ -346,20 +346,20 @@ const Customers = () => {
   // Filter customers based on search, zone, payment status, and selected month
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.phoneNumber?.includes(searchTerm) ||
-                         customer.address?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      customer.phoneNumber?.includes(searchTerm) ||
+      customer.address?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const payment = getSelectedMonthPayment(customer);
     const isPaid = payment.fullyPaid;
-    
-    const matchesPayment = paymentFilter === 'all' || 
-                          (paymentFilter === 'paid' && isPaid) ||
-                          (paymentFilter === 'unpaid' && !isPaid);
-    
-    const matchesZone = zoneFilter === 'all' || 
-                       customer.zoneId?._id === zoneFilter || 
-                       customer.zoneId === zoneFilter;
-    
+
+    const matchesPayment = paymentFilter === 'all' ||
+      (paymentFilter === 'paid' && isPaid) ||
+      (paymentFilter === 'unpaid' && !isPaid);
+
+    const matchesZone = zoneFilter === 'all' ||
+      customer.zoneId?._id === zoneFilter ||
+      customer.zoneId === zoneFilter;
+
     return matchesSearch && matchesPayment && matchesZone;
   });
 
@@ -394,14 +394,14 @@ const Customers = () => {
     const amount = parseFloat(paymentAmount);
     const customer = selectedCustomer;
     const currentPayment = getSelectedMonthPayment(customer);
-    
+
     if (amount > currentPayment.remaining) {
       alert(`Payment amount cannot exceed remaining balance of $${currentPayment.remaining.toFixed(2)}`);
       return;
     }
 
     setActionLoading('processing-payment');
-    
+
     try {
       // Ensure monthly payment is initialized with date if not exists
       if (!currentPayment.date) {
@@ -428,10 +428,10 @@ const Customers = () => {
       const updatedCustomer = response.data || response;
 
       // Update local state
-      setCustomers(prev => prev.map(c => 
+      setCustomers(prev => prev.map(c =>
         c._id === customer._id ? updatedCustomer : c
       ));
-      
+
       setShowPaymentModal(false);
       setSelectedCustomer(null);
       setPaymentAmount('');
@@ -449,13 +449,13 @@ const Customers = () => {
   // Enhanced payment toggle with carry-over calculation
   const handlePaymentToggle = async (customerId) => {
     setActionLoading(`toggle-${customerId}`);
-    
+
     const customer = customers.find(c => c._id === customerId);
     if (!customer) return;
 
     const currentPayment = getSelectedMonthPayment(customer);
     const newFullyPaid = !currentPayment.fullyPaid;
-    
+
     try {
       // Ensure monthly payment is initialized with date if not exists
       if (!currentPayment.date) {
@@ -465,7 +465,7 @@ const Customers = () => {
 
       // Use the payment endpoint with total due
       const paid = newFullyPaid ? currentPayment.totalDue : 0;
-      
+
       await apiRequest(`/customers/${customerId}/payment`, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -478,7 +478,7 @@ const Customers = () => {
 
       // Reload data to get updated calculations
       await loadData();
-      
+
     } catch (error) {
       console.error('Error updating payment status:', error);
       alert('Error updating payment status: ' + error.message);
@@ -495,7 +495,7 @@ const Customers = () => {
     }
 
     setActionLoading('setting-date');
-    
+
     try {
       // Initialize monthly payment for all customers with the selected date
       const updatePromises = customers.map(async (customer) => {
@@ -509,7 +509,7 @@ const Customers = () => {
 
       await Promise.all(updatePromises);
       await loadData();
-      
+
       setShowDateModal(false);
       setMonthlyDate('');
       alert(`Monthly date set successfully for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
@@ -533,17 +533,17 @@ const Customers = () => {
     }
 
     setMarkAllLoading(true);
-    
+
     try {
       // Use the backend endpoint that handles carry-over calculations
       await apiRequest('/customers/payments/mark-all-paid', {
         method: 'PATCH',
         body: JSON.stringify({ month: selectedMonth })
       });
-      
+
       // Reload data to get updated payment status
       await loadData();
-      
+
       alert(`Successfully marked ${filteredCustomers.length} customers as paid for ${new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
     } catch (error) {
       console.error('Error marking all as paid:', error);
@@ -557,7 +557,7 @@ const Customers = () => {
   const handleCustomerSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const formData = new FormData(e.target);
     const customerData = {
       fullName: formData.get('fullName'),
@@ -573,27 +573,27 @@ const Customers = () => {
           method: 'PUT',
           body: JSON.stringify(customerData)
         });
-        
+
         // Ensure we get the updated customer data
         const updatedCustomer = response.data || response;
-        
-        setCustomers(prev => prev.map(c => 
+
+        setCustomers(prev => prev.map(c =>
           c._id === editingCustomer._id ? updatedCustomer : c
         ));
-        
+
         alert('Customer updated successfully!');
       } else {
         const response = await apiRequest('/customers', {
           method: 'POST',
           body: JSON.stringify(customerData)
         });
-        
+
         // Ensure we get the new customer data
         const newCustomer = response.data || response;
-        
+
         // Add the new customer to the END of the list to maintain sequential numbering
         setCustomers(prev => [...prev, newCustomer]);
-        
+
         alert('Customer created successfully!');
       }
       setShowCustomerModal(false);
@@ -610,7 +610,7 @@ const Customers = () => {
   const handleVillageSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const formData = new FormData(e.target);
     const villageData = {
       name: formData.get('name'),
@@ -625,7 +625,7 @@ const Customers = () => {
           method: 'PUT',
           body: JSON.stringify(villageData)
         });
-        setVillages(prev => prev.map(v => 
+        setVillages(prev => prev.map(v =>
           v._id === editingVillage._id ? updatedVillage : v
         ));
         alert('Village updated successfully!');
@@ -651,7 +651,7 @@ const Customers = () => {
   const handleZoneSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const formData = new FormData(e.target);
     const zoneData = {
       name: formData.get('name'),
@@ -667,7 +667,7 @@ const Customers = () => {
           method: 'PUT',
           body: JSON.stringify(zoneData)
         });
-        setZones(prev => prev.map(z => 
+        setZones(prev => prev.map(z =>
           z._id === editingZone._id ? updatedZone : z
         ));
         alert('Zone updated successfully!');
@@ -743,7 +743,7 @@ const Customers = () => {
   // Print function - Updated for zone-specific printing
   const handlePrintCustomerList = () => {
     const selectedZone = zoneFilter !== 'all' ? zones.find(z => z._id === zoneFilter) : null;
-    
+
     setPrintData({
       customers: filteredCustomers,
       filters: {
@@ -776,18 +776,18 @@ const Customers = () => {
   const handleMonthChange = (e) => {
     const m = e.target.value;
     setSelectedMonth(m);
-    try { localStorage.setItem('selectedMonth', m); } catch {}
+    try { localStorage.setItem('selectedMonth', m); } catch { }
   };
 
   // Get customers for current print page (50 per page)
   const getCustomersForPrintPage = (page) => {
-    const startIndex = (page - 1) * 50;
-    const endIndex = startIndex + 50;
+    const startIndex = (page - 1) * 48;
+    const endIndex = startIndex + 48;
     return printData.customers.slice(startIndex, endIndex);
   };
 
   // Calculate total print pages
-  const totalPrintPages = printData ? Math.ceil(printData.customers.length / 50) : 0;
+  const totalPrintPages = printData ? Math.ceil(printData.customers.length / 48) : 0;
 
   return (
     <div className="space-y-4 p-4 md:space-y-6 md:p-6">
@@ -815,12 +815,7 @@ const Customers = () => {
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded no-print">
-          Loading data from server...
-        </div>
-      )}
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 no-print">
@@ -885,7 +880,7 @@ const Customers = () => {
             Print List
           </button>
         </div>
-        
+
         {/* Month Selection and Mark All Button */}
         <div className="mt-3 md:mt-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -916,7 +911,7 @@ const Customers = () => {
                   const payment = getSelectedMonthPayment(c);
                   return payment.date;
                 });
-                const defaultDate = customerWithDate 
+                const defaultDate = customerWithDate
                   ? new Date(getSelectedMonthPayment(customerWithDate).date).toISOString().split('T')[0]
                   : new Date().toISOString().split('T')[0];
                 setMonthlyDate(defaultDate);
@@ -930,9 +925,8 @@ const Customers = () => {
             <button
               onClick={handleMarkAllAsPaid}
               disabled={markAllLoading || filteredCustomers.length === 0}
-              className={`bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 transition duration-200 text-sm md:text-base ${
-                markAllLoading || filteredCustomers.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 transition duration-200 text-sm md:text-base ${markAllLoading || filteredCustomers.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {markAllLoading ? (
                 <>
@@ -981,7 +975,7 @@ const Customers = () => {
                 const payment = getSelectedMonthPayment(customer);
                 const isToggleLoading = actionLoading === `toggle-${customer._id}`;
                 const isDeleteLoading = actionLoading === `delete-${customer._id}`;
-                
+
                 return (
                   <tr key={customer._id} className="hover:bg-gray-50">
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm font-medium text-gray-900">
@@ -1012,11 +1006,10 @@ const Customers = () => {
                           <button
                             onClick={() => handlePaymentToggle(customer._id)}
                             disabled={isToggleLoading}
-                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition duration-200 min-w-[100px] justify-center ${
-                              payment.fullyPaid
-                                ? 'bg-green-500 text-white hover:bg-green-600'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            } ${isToggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition duration-200 min-w-[100px] justify-center ${payment.fullyPaid
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              } ${isToggleLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             {isToggleLoading ? (
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -1032,7 +1025,7 @@ const Customers = () => {
                               </>
                             )}
                           </button>
-                          
+
                           {!payment.fullyPaid && payment.remaining > 0 && (
                             <button
                               onClick={() => handlePartialPayment(customer)}
@@ -1118,7 +1111,7 @@ const Customers = () => {
             <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2">No customers found</h3>
             <p className="text-gray-600 mb-4 text-sm md:text-base">
               {searchTerm || paymentFilter !== 'all' || zoneFilter !== 'all'
-                ? 'Try adjusting your filters' 
+                ? 'Try adjusting your filters'
                 : 'Add your first customer to get started'}
             </p>
             <button
@@ -1139,82 +1132,65 @@ const Customers = () => {
           {Array.from({ length: totalPrintPages }, (_, pageIndex) => {
             const currentPage = pageIndex + 1;
             const pageCustomers = getCustomersForPrintPage(currentPage);
-            const startNumber = (currentPage - 1) * 50 + 1;
-            
+            const startNumber = (currentPage - 1) * 48 + 1;
+
             return (
-              <div key={`page-${currentPage}`} className="print-page" style={{ pageBreakAfter: 'always' }}>
-                <div className="p-2">
-                  {/* Header - UPDATED: Shows zone name when printing a specific zone */}
-                  <div className="text-center mb-2 border-b border-gray-300 pb-1">
-                    <h1 className="text-sm font-bold text-gray-900">
-                      {printData.zoneName 
-                        ? `${printData.zoneName} - Customers List` 
-                        : 'Customers List'}
+              <div key={`page-${currentPage}`} className="print-page h-screen flex flex-col" style={{ pageBreakAfter: 'always', margin: 0, padding: 0 }}>
+                <div className="p-0">
+                  {/* Header - UPDATED: Compact */}
+                  <div className="text-center mb-1 border-b border-gray-300 pb-0.5">
+                    <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide">
+                      {printData.zoneName
+                        ? `${printData.zoneName} - SHIRKADA NADAAFADA EE GOOL`
+                        : 'SHIRKADA NADAAFADA EE GOOL'}
                     </h1>
-                    <p className="text-xs text-gray-600">Generated on {printData.printedDate} at {printData.printedTime}</p>
-                    <p className="text-xs text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
-                    <p className="text-xs text-gray-600">Month Date: {(() => { const d = getSelectedMonthRealDate(); return d ? new Date(d).toLocaleDateString('en-US') : 'Not set'; })()}</p>
-                    <p className="text-xs text-gray-600 font-medium">
-                      Page {currentPage} of {totalPrintPages}
-                    </p>
+                    <div className="flex justify-between items-end px-2">
+                      <p className="text-[10px] text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                      <p className="text-[10px] text-gray-600">Page {currentPage}/{totalPrintPages}</p>
+                    </div>
                   </div>
 
-                  {/* Customers Table - UPDATED: REMOVED ZONE COLUMN */}
-                  <table className="w-full border-collapse border border-gray-300" style={{ fontSize: '8px' }}>
+                  {/* Customers Table - UPDATED: Ultra compact */}
+                  <table className="w-full border-collapse border border-gray-300 table-fixed" style={{ fontSize: '11px' }}>
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '6%' }}>#</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '30%' }}>Customer Name</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Phone Number</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '16%' }}>Month Fee</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Status</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '14%' }}>Date</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '5%' }}>#</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '30%' }}>Name</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Phone</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Fee</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Status</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Sign</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pageCustomers.map((customer, index) => {
                         const payment = getSelectedMonthPayment(customer);
-                        
+
                         return (
-                          <tr key={customer._id} style={{ height: '12px' }}>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{startNumber + index}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle font-medium">{customer.fullName}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle">{customer.phoneNumber}</td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-right">
+                          <tr key={customer._id} style={{ height: '18px' }}>
+                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none">{startNumber + index}</td>
+                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none truncate">{customer.fullName}</td>
+                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none">{customer.phoneNumber}</td>
+                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none text-right">
                               {(() => {
                                 const prevMonthFullyPaid = isPreviousMonthFullyPaid(customer, selectedMonth);
-                                
-                                if (prevMonthFullyPaid) {
-                                  return `$${payment.monthlyFee.toFixed(2)}`;
-                                }
-                                
-                                if (payment.previousBalance > 0 && !payment.fullyPaid) {
-                                  return `$${payment.totalDue.toFixed(2)}`;
-                                }
-                                
-                                if (payment.fullyPaid) {
-                                  return `$${payment.monthlyFee.toFixed(2)}`;
-                                }
-                                
+                                if (prevMonthFullyPaid) return `$${payment.monthlyFee.toFixed(2)}`;
+                                if (payment.previousBalance > 0 && !payment.fullyPaid) return `$${payment.totalDue.toFixed(2)}`;
                                 return `$${payment.monthlyFee.toFixed(2)}`;
                               })()}
                             </td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-center">
-                              {/* Status column is EMPTY for manual entry */}
-                            </td>
-                            <td className="border border-gray-300 px-1 py-0.5 align-middle text-center">
-                              {/* Date field is always empty in print view for manual entry */}
-                            </td>
+                            <td className="border border-gray-300 px-1 py-0 align-middle text-center"></td>
+                            <td className="border border-gray-300 px-1 py-0 align-middle text-center"></td>
                           </tr>
                         );
                       })}
+                      {/* Fill empty rows if needed to maintain size, though user wants 48 fit */}
                     </tbody>
                   </table>
 
-                  {/* Page Footer with Company Name */}
-                  <div className="mt-2 text-center border-t border-gray-300 pt-1">
-                    <p className="text-xs text-gray-500 mb-0.5">Page {currentPage} of {totalPrintPages} - {pageCustomers.length} customers</p>
-                    <p className="text-xs font-semibold text-gray-700">powered by HUDI SOMPROJECT</p>
+                  {/* Page Footer */}
+                  <div className="mt-1 text-center border-t border-gray-300 pt-0.5">
+                    <p className="text-[9px] font-semibold text-gray-700">powered by HUDI SOMPROJECT</p>
                   </div>
                 </div>
               </div>
@@ -1247,7 +1223,7 @@ const Customers = () => {
                   This date will be used for all customers for this month. Each month should have its own date.
                 </p>
               </div>
-              
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -1262,9 +1238,8 @@ const Customers = () => {
                 <button
                   onClick={handleSetMonthlyDate}
                   disabled={actionLoading === 'setting-date' || !monthlyDate}
-                  className={`bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center ${
-                    actionLoading === 'setting-date' || !monthlyDate ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center ${actionLoading === 'setting-date' || !monthlyDate ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   {actionLoading === 'setting-date' ? (
                     <>
@@ -1290,7 +1265,7 @@ const Customers = () => {
               <div>
                 <p className="text-sm text-gray-600">Customer: <strong>{selectedCustomer.fullName}</strong></p>
                 <p className="text-sm text-gray-600">Month: <strong>{new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</strong></p>
-                
+
                 <div className="mt-2 p-3 bg-blue-50 rounded-lg space-y-2">
                   {(() => {
                     const payment = getSelectedMonthPayment(selectedCustomer);
@@ -1329,7 +1304,7 @@ const Customers = () => {
                   })()}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Payment Amount ($)
@@ -1348,7 +1323,7 @@ const Customers = () => {
                   Maximum: ${getSelectedMonthPayment(selectedCustomer).remaining.toFixed(2)}
                 </p>
               </div>
-              
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -1364,9 +1339,8 @@ const Customers = () => {
                 <button
                   onClick={processPayment}
                   disabled={actionLoading === 'processing-payment'}
-                  className={`bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center ${
-                    actionLoading === 'processing-payment' ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center ${actionLoading === 'processing-payment' ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   {actionLoading === 'processing-payment' ? (
                     <>
@@ -1617,11 +1591,11 @@ const Customers = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 {zones.map(zone => {
                   const village = villages.find(v => v._id === zone.villageId);
-                  const zoneCustomers = customers.filter(c => 
+                  const zoneCustomers = customers.filter(c =>
                     c.zoneId?._id === zone._id || c.zoneId === zone._id
                   );
                   const isDeleteLoading = actionLoading === `delete-zone-${zone._id}`;
-                  
+
                   return (
                     <div key={zone._id} className="bg-gray-50 p-3 md:p-4 rounded-lg border border-gray-200">
                       <div className="flex justify-between items-start mb-2 md:mb-3">

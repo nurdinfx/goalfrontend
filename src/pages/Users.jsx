@@ -53,7 +53,11 @@ const Users = () => {
   // Validate form data
   const validateForm = (data, isEdit = false) => {
     const errors = {};
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     if (!data.name?.trim()) {
       errors.name = 'Name is required';
     }
@@ -70,7 +74,11 @@ const Users = () => {
     } else if (data.password && data.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return errors;
   };
 
@@ -105,7 +113,11 @@ const Users = () => {
       } else {
         await apiService.createUser(userData);
       }
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setShowModal(false);
       setEditingUser(null);
       setFormErrors({});
@@ -202,13 +214,21 @@ const Users = () => {
       manager: 'bg-blue-100 text-blue-800',
       user: 'bg-gray-100 text-gray-800'
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const roleText = {
       admin: 'Admin',
       manager: 'Manager',
       user: 'User'
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[role] || 'bg-gray-100 text-gray-800'}`}>
         {roleText[role] || 'Unknown'}
@@ -219,9 +239,14 @@ const Users = () => {
   // Status badge component
   const StatusBadge = ({ isActive }) => {
     return (
+<<<<<<< HEAD
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
         isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
       }`}>
+=======
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+>>>>>>> ddb7805 (initial frontend commit)
         {isActive ? 'Active' : 'Inactive'}
       </span>
     );
@@ -267,6 +292,7 @@ const Users = () => {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Loading State */}
       {loading && (
         <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded no-print">
@@ -276,6 +302,9 @@ const Users = () => {
           </div>
         </div>
       )}
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
 
       {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 no-print">
@@ -445,9 +474,14 @@ const Users = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.name ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.name ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter full name"
                     />
                     {formErrors.name && (
@@ -464,9 +498,14 @@ const Users = () => {
                       required
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().trim() })}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.username ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.username ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter username"
                       disabled={!!editingUser}
                     />
@@ -487,9 +526,14 @@ const Users = () => {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase().trim() })}
+<<<<<<< HEAD
                       className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                         formErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter email address"
                     />
                     {formErrors.email && (
@@ -522,9 +566,14 @@ const Users = () => {
                         required={!editingUser}
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+<<<<<<< HEAD
                         className={`w-full border rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${
                           formErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                         }`}
+=======
+                        className={`w-full border rounded-lg px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base ${formErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                          }`}
+>>>>>>> ddb7805 (initial frontend commit)
                         placeholder={editingUser ? "Leave blank to keep current password" : "Enter password"}
                       />
                       <button
@@ -562,7 +611,11 @@ const Users = () => {
                   </div>
                 </div>
               </div>
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
               <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
                 <button
                   type="button"

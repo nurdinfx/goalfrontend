@@ -82,13 +82,18 @@ const Zones = () => {
       if (savedMonth) {
         setSelectedMonth(savedMonth);
       }
+<<<<<<< HEAD
     } catch {}
+=======
+    } catch { }
+>>>>>>> ddb7805 (initial frontend commit)
   }, []);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setBackendConnected(true);
+<<<<<<< HEAD
       
       console.log('🔄 Loading zones, customers, and villages data...');
       
@@ -100,24 +105,51 @@ const Zones = () => {
         throw new Error('Backend server is not responding');
       }
       
+=======
+
+      console.log('🔄 Loading zones, customers, and villages data...');
+
+      // Test backend connection first
+      const healthCheck = await apiService.healthCheck();
+      console.log('🏥 Backend health:', healthCheck);
+
+      if (healthCheck.status === 'down') {
+        throw new Error('Backend server is not responding');
+      }
+
+>>>>>>> ddb7805 (initial frontend commit)
       // Load zones, customers, and villages from backend
       const [zonesResponse, customersResponse, villagesResponse] = await Promise.all([
         apiService.getZones(),
         apiService.getCustomers(),
         apiService.getVillages()
       ]);
+<<<<<<< HEAD
       
       console.log('📦 Zones response:', zonesResponse);
       console.log('👥 Customers response:', customersResponse);
       console.log('🏘️ Villages response:', villagesResponse);
       
+=======
+
+      console.log('📦 Zones response:', zonesResponse);
+      console.log('👥 Customers response:', customersResponse);
+      console.log('🏘️ Villages response:', villagesResponse);
+
+>>>>>>> ddb7805 (initial frontend commit)
       // Handle different response formats and ensure data is properly structured
       const zonesData = Array.isArray(zonesResponse) ? zonesResponse : (zonesResponse?.data || zonesResponse || []);
       const customersData = Array.isArray(customersResponse) ? customersResponse : (customersResponse?.data || customersResponse || []);
       const villagesData = Array.isArray(villagesResponse) ? villagesResponse : (villagesResponse?.data || villagesResponse || []);
+<<<<<<< HEAD
       
       console.log(`✅ Loaded ${zonesData.length} zones, ${customersData.length} customers, and ${villagesData.length} villages`);
       
+=======
+
+      console.log(`✅ Loaded ${zonesData.length} zones, ${customersData.length} customers, and ${villagesData.length} villages`);
+
+>>>>>>> ddb7805 (initial frontend commit)
       // Use the zoneNumber from backend or assign based on creation order
       const zonesWithStableNumbers = zonesData.map((zone, index) => ({
         ...zone,
@@ -133,16 +165,28 @@ const Zones = () => {
         createdAt: zone.createdAt ? new Date(zone.createdAt) : new Date(),
         updatedAt: zone.updatedAt ? new Date(zone.updatedAt) : new Date()
       }));
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setZones(zonesWithStableNumbers);
       setCustomers(customersData);
       setVillages(villagesData);
       setLastUpdated(new Date());
+<<<<<<< HEAD
       
     } catch (error) {
       console.error('❌ Error loading data:', error);
       setBackendConnected(false);
       
+=======
+
+    } catch (error) {
+      console.error('❌ Error loading data:', error);
+      setBackendConnected(false);
+
+>>>>>>> ddb7805 (initial frontend commit)
       // Use fallback data if backend is not available
       const currentMonth = getCurrentMonth();
       const fallbackZones = [
@@ -179,7 +223,11 @@ const Zones = () => {
           updatedAt: new Date()
         }
       ];
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       const fallbackCustomers = [
         {
           _id: '1',
@@ -190,9 +238,15 @@ const Zones = () => {
           villageId: '1',
           zoneId: '1',
           payments: {
+<<<<<<< HEAD
             [currentMonth]: { 
               paid: 50, 
               remaining: 0, 
+=======
+            [currentMonth]: {
+              paid: 50,
+              remaining: 0,
+>>>>>>> ddb7805 (initial frontend commit)
               fullyPaid: true,
               paymentDate: new Date().toISOString()
             }
@@ -209,9 +263,15 @@ const Zones = () => {
           villageId: '2',
           zoneId: '2',
           payments: {
+<<<<<<< HEAD
             [currentMonth]: { 
               paid: 25, 
               remaining: 20, 
+=======
+            [currentMonth]: {
+              paid: 25,
+              remaining: 20,
+>>>>>>> ddb7805 (initial frontend commit)
               fullyPaid: false,
               paymentDate: new Date().toISOString()
             }
@@ -241,7 +301,11 @@ const Zones = () => {
           updatedAt: new Date()
         }
       ];
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setZones(fallbackZones);
       setCustomers(fallbackCustomers);
       setVillages(fallbackVillages);
@@ -257,6 +321,7 @@ const Zones = () => {
   // Get previous month's remaining balance (same logic as Customers page)
   const getPreviousMonthBalance = (customer, month) => {
     if (!customer || !month) return 0;
+<<<<<<< HEAD
     
     const [year, monthNum] = month.split('-').map(Number);
     if (isNaN(year) || isNaN(monthNum)) return 0;
@@ -264,13 +329,28 @@ const Zones = () => {
     let prevYear = year;
     let prevMonth = monthNum - 1;
     
+=======
+
+    const [year, monthNum] = month.split('-').map(Number);
+    if (isNaN(year) || isNaN(monthNum)) return 0;
+
+    let prevYear = year;
+    let prevMonth = monthNum - 1;
+
+>>>>>>> ddb7805 (initial frontend commit)
     if (prevMonth < 1) {
       prevMonth = 12;
       prevYear = year - 1;
     }
+<<<<<<< HEAD
     
     const prevMonthStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
     
+=======
+
+    const prevMonthStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Check monthlyPayments first (new structure)
     const prevMonthlyPayment = customer.monthlyPayments?.find(p => p.month === prevMonthStr);
     if (prevMonthlyPayment) {
@@ -281,7 +361,11 @@ const Zones = () => {
       const remaining = prevMonthlyPayment.remaining;
       return (typeof remaining === 'number' && remaining > 0) ? remaining : 0;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Fallback to old payments structure (backward compatibility)
     const prevPayment = customer.payments?.[prevMonthStr];
     if (prevPayment) {
@@ -292,7 +376,11 @@ const Zones = () => {
       const remaining = prevPayment.remaining;
       return (typeof remaining === 'number' && remaining > 0) ? remaining : 0;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return 0;
   };
 
@@ -311,12 +399,20 @@ const Zones = () => {
         monthlyFee: 0
       };
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Always recalculate previous balance to ensure it's correct
     const previousBalance = getPreviousMonthBalance(customer, selectedMonth);
     const monthlyFee = customer.monthlyFee || 0;
     const totalDue = previousBalance + monthlyFee;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Check monthlyPayments first (new structure)
     const monthlyPayment = customer.monthlyPayments?.find(p => p.month === selectedMonth);
     if (monthlyPayment) {
@@ -326,7 +422,11 @@ const Zones = () => {
       const paid = typeof monthlyPayment.paid === 'number' ? monthlyPayment.paid : 0;
       const recalculatedRemaining = Math.max(0, recalculatedTotalDue - paid);
       const fullyPaid = recalculatedRemaining <= 0 || monthlyPayment.fullyPaid === true;
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       return {
         paid: paid,
         remaining: fullyPaid ? 0 : recalculatedRemaining,
@@ -339,12 +439,21 @@ const Zones = () => {
         monthlyFee: paymentMonthlyFee
       };
     }
+<<<<<<< HEAD
     
     // Fallback to old payments structure (backward compatibility)
     if (!customer.payments || !customer.payments[selectedMonth]) {
       return { 
         paid: 0, 
         remaining: totalDue, 
+=======
+
+    // Fallback to old payments structure (backward compatibility)
+    if (!customer.payments || !customer.payments[selectedMonth]) {
+      return {
+        paid: 0,
+        remaining: totalDue,
+>>>>>>> ddb7805 (initial frontend commit)
         fullyPaid: false,
         paidDate: null,
         month: selectedMonth,
@@ -354,12 +463,20 @@ const Zones = () => {
         monthlyFee: monthlyFee
       };
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const payment = customer.payments[selectedMonth];
     const paid = typeof payment.paid === 'number' ? payment.paid : 0;
     const recalculatedRemaining = Math.max(0, totalDue - paid);
     const fullyPaid = recalculatedRemaining <= 0;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return {
       paid,
       remaining: fullyPaid ? 0 : recalculatedRemaining,
@@ -377,17 +494,30 @@ const Zones = () => {
   const calculateZoneStats = (zone) => {
     // Get all customers assigned to this zone
     const zoneCustomers = customers.filter(customer => {
+<<<<<<< HEAD
       return customer.zoneId === zone._id || 
              (customer.zoneId && customer.zoneId._id === zone._id);
     });
 
     const totalCustomers = zoneCustomers.length;
     
+=======
+      return customer.zoneId === zone._id ||
+        (customer.zoneId && customer.zoneId._id === zone._id);
+    });
+
+    const totalCustomers = zoneCustomers.length;
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Calculate payment statistics for selected month
     const monthlyStats = zoneCustomers.reduce((stats, customer) => {
       // Get payment for selected month (with carry-over calculation)
       const payment = getSelectedMonthPayment(customer);
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       const monthlyFee = Number(payment.monthlyFee || customer.monthlyFee) || 0;
       const totalDue = Number(payment.totalDue) || monthlyFee;
       const paidAmount = Number(payment.paid) || 0;
@@ -419,14 +549,24 @@ const Zones = () => {
     const totalRevenue = monthlyStats.totalDue;
     const unpaidAmount = monthlyStats.totalRemaining;
     const netProfit = monthlyStats.totalPaid;
+<<<<<<< HEAD
     
     // Calculate collection rate with decimal precision
     const collectionRate = monthlyStats.totalDue > 0 ? 
+=======
+
+    // Calculate collection rate with decimal precision
+    const collectionRate = monthlyStats.totalDue > 0 ?
+>>>>>>> ddb7805 (initial frontend commit)
       (monthlyStats.totalPaid / monthlyStats.totalDue) * 100 : 0;
 
     // Calculate customer percentage (if this zone has customers compared to total)
     const totalAllCustomers = customers.length;
+<<<<<<< HEAD
     const customerPercentage = totalAllCustomers > 0 ? 
+=======
+    const customerPercentage = totalAllCustomers > 0 ?
+>>>>>>> ddb7805 (initial frontend commit)
       (totalCustomers / totalAllCustomers) * 100 : 0;
 
     return {
@@ -474,7 +614,11 @@ const Zones = () => {
   // Get next available list number for new zones
   const getNextListNumber = () => {
     if (zones.length === 0) return 1;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     // Find the highest existing list number and add 1
     const maxNumber = Math.max(...zones.map(zone => zone.listNumber || 0));
     return maxNumber + 1;
@@ -484,7 +628,11 @@ const Zones = () => {
   const filteredZones = zones.filter(zone => {
     const searchLower = searchTerm?.toLowerCase() || '';
     const villageName = ''.toLowerCase();
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     return (
       zone?.name?.toLowerCase().includes(searchLower) ||
       zone?.listNumber?.toString().includes(searchTerm) ||
@@ -499,6 +647,7 @@ const Zones = () => {
   // Validate form data
   const validateForm = (formData) => {
     const errors = {};
+<<<<<<< HEAD
     
     if (!formData.name?.trim()) {
       errors.name = 'Zone name is required';
@@ -508,6 +657,17 @@ const Zones = () => {
       errors.name = 'Zone name must be at least 2 characters long';
     }
     
+=======
+
+    if (!formData.name?.trim()) {
+      errors.name = 'Zone name is required';
+    }
+
+    if (formData.name?.trim().length < 2) {
+      errors.name = 'Zone name must be at least 2 characters long';
+    }
+
+>>>>>>> ddb7805 (initial frontend commit)
     return errors;
   };
 
@@ -517,7 +677,11 @@ const Zones = () => {
     setFormErrors({});
 
     const formData = new FormData(e.target);
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const zoneData = {
       name: formData.get('name').trim(),
       description: formData.get('description')?.trim() || '',
@@ -541,7 +705,11 @@ const Zones = () => {
 
     try {
       console.log('🚀 Saving zone data:', zoneData);
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       let result;
       if (editingZone) {
         result = await apiService.updateZone(editingZone._id, zoneData);
@@ -550,12 +718,20 @@ const Zones = () => {
         result = await apiService.createZone(zoneData);
         console.log('✅ Zone created:', result);
       }
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       setShowModal(false);
       setEditingZone(null);
       setFormErrors({});
       setRefreshTrigger(prev => prev + 1);
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       alert(`Zone ${editingZone ? 'updated' : 'created'} successfully!`);
     } catch (error) {
       console.error('❌ Error saving zone:', error);
@@ -581,7 +757,11 @@ const Zones = () => {
 
   const handlePrintZonePayments = (zone) => {
     const zoneStats = calculateZoneStats(zone);
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const zoneForPrint = {
       ...zone,
       stats: zoneStats,
@@ -600,13 +780,21 @@ const Zones = () => {
   const handlePrintAllZones = () => {
     const allZonesData = filteredZones.map(zone => {
       const stats = calculateZoneStats(zone);
+<<<<<<< HEAD
       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
       return {
         ...zone,
         stats: stats
       };
     });
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     const printAllData = {
       zones: allZonesData,
       overallStats: calculateOverallStats(),
@@ -615,7 +803,11 @@ const Zones = () => {
       selectedMonth: selectedMonth,
       type: 'all-zones'
     };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
     setPrintData(printAllData);
     setTimeout(() => {
       window.print();
@@ -715,12 +907,20 @@ const Zones = () => {
   const villagesStats = {
     totalVillages: villages.length,
     totalVillageCustomers: villages.reduce((total, village) => {
+<<<<<<< HEAD
       const villageCustomers = customers.filter(c => 
+=======
+      const villageCustomers = customers.filter(c =>
+>>>>>>> ddb7805 (initial frontend commit)
         c.villageId?._id === village._id || c.villageId === village._id
       );
       return total + villageCustomers.length;
     }, 0),
+<<<<<<< HEAD
     averageMonthlyFee: villages.length > 0 
+=======
+    averageMonthlyFee: villages.length > 0
+>>>>>>> ddb7805 (initial frontend commit)
       ? villages.reduce((sum, village) => sum + (village.monthlyFee || 0), 0) / villages.length
       : 0
   };
@@ -805,6 +1005,7 @@ const Zones = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Loading State */}
         {loading && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 no-print">
@@ -814,6 +1015,9 @@ const Zones = () => {
             </div>
           </div>
         )}
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
 
         {/* Month Selection and Search */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 no-print mb-4">
@@ -836,7 +1040,11 @@ const Zones = () => {
               </label>
               <select
                 value={selectedMonth}
+<<<<<<< HEAD
                 onChange={(e) => { const m = e.target.value; setSelectedMonth(m); try { localStorage.setItem('selectedMonth', m); } catch {} }}
+=======
+                onChange={(e) => { const m = e.target.value; setSelectedMonth(m); try { localStorage.setItem('selectedMonth', m); } catch { } }}
+>>>>>>> ddb7805 (initial frontend commit)
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm bg-white"
               >
                 {availableMonths.map((month) => (
@@ -949,7 +1157,11 @@ const Zones = () => {
                 {filteredZones.map((zone) => {
                   const stats = calculateZoneStats(zone);
                   const villageName = getVillageName(zone);
+<<<<<<< HEAD
                   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                   return (
                     <tr key={zone._id} className="hover:bg-gray-50 transition-colors duration-150">
                       {/* List Number */}
@@ -963,7 +1175,11 @@ const Zones = () => {
                           </div>
                         )}
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Zone Details */}
                       <td className="px-3 py-4">
                         <div className="text-sm font-semibold text-gray-900">{zone.name}</div>
@@ -977,7 +1193,11 @@ const Zones = () => {
                           Created: {formatDate(zone.createdAt)}
                         </div>
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Total Customers */}
                       <td className="px-3 py-4">
                         <div className="text-sm text-gray-900 font-semibold text-center">
@@ -991,27 +1211,40 @@ const Zones = () => {
                           {stats.paidCustomers}
                         </div>
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Unpaid Customers */}
                       <td className="px-3 py-4">
                         <div className="text-sm text-red-600 font-semibold text-center">
                           {stats.unpaidCustomers}
                         </div>
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Percentage of Customers */}
                       <td className="px-3 py-4">
                         <div className="text-sm text-purple-600 font-semibold text-center">
                           {stats.customerPercentage.toFixed(1)}%
                         </div>
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Total Revenue */}
                       <td className="px-3 py-4">
                         <div className="text-sm text-blue-600 font-semibold text-center">
                           {formatCurrency(stats.totalRevenue)}
                         </div>
                       </td>
+<<<<<<< HEAD
                       
                       {/* Net Profit */}
                       <td className="px-3 py-4">
@@ -1022,10 +1255,22 @@ const Zones = () => {
                         </div>
                       </td>
                       
+=======
+
+                      {/* Net Profit */}
+                      <td className="px-3 py-4">
+                        <div className={`text-sm font-semibold text-center ${stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                          {formatCurrency(stats.netProfit)}
+                        </div>
+                      </td>
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Collection Rate with Decimal Precision */}
                       <td className="px-3 py-4">
                         <div className="flex flex-col items-center space-y-2">
                           <div className="w-full bg-gray-200 rounded-full h-2">
+<<<<<<< HEAD
                             <div 
                               className="h-2 rounded-full transition-all duration-300"
                               style={{ 
@@ -1039,11 +1284,29 @@ const Zones = () => {
                             stats.collectionRate >= 80 ? 'text-green-600' : 
                             stats.collectionRate >= 50 ? 'text-yellow-600' : 'text-red-600'
                           }`}>
+=======
+                            <div
+                              className="h-2 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${Math.min(stats.collectionRate, 100)}%`,
+                                backgroundColor: stats.collectionRate >= 80 ? '#10B981' :
+                                  stats.collectionRate >= 50 ? '#F59E0B' : '#EF4444'
+                              }}
+                            ></div>
+                          </div>
+                          <span className={`text-xs font-semibold ${stats.collectionRate >= 80 ? 'text-green-600' :
+                              stats.collectionRate >= 50 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
+>>>>>>> ddb7805 (initial frontend commit)
                             {stats.collectionRate.toFixed(1)}%
                           </span>
                         </div>
                       </td>
+<<<<<<< HEAD
                       
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                       {/* Actions */}
                       <td className="px-3 py-4">
                         <div className="flex justify-center space-x-2">
@@ -1117,16 +1380,25 @@ const Zones = () => {
                       required
                       minLength="2"
                       defaultValue={editingZone?.name}
+<<<<<<< HEAD
                       className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
                         formErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:border-blue-500'
                       }`}
+=======
+                      className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${formErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:border-blue-500'
+                        }`}
+>>>>>>> ddb7805 (initial frontend commit)
                       placeholder="Enter zone name"
                     />
                     {formErrors.name && (
                       <p className="text-red-500 text-xs mt-2">{formErrors.name}</p>
                     )}
                   </div>
+<<<<<<< HEAD
                   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Description
@@ -1237,7 +1509,11 @@ const Zones = () => {
                       </p>
                     </div>
                   )}
+<<<<<<< HEAD
                   
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
                   {!editingZone && (
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                       <p className="text-sm font-medium text-blue-700">
@@ -1297,7 +1573,11 @@ const Zones = () => {
                   Month Date: {(() => { const d = getMonthRealDateFor(printData.selectedMonth); return d ? new Date(d).toLocaleDateString('en-US') : 'Not set'; })()}
                 </p>
               </div>
+<<<<<<< HEAD
               
+=======
+
+>>>>>>> ddb7805 (initial frontend commit)
               {printData.type !== 'single-zone' ? (
                 <div className="mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
