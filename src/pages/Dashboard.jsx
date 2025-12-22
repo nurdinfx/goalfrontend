@@ -19,38 +19,26 @@ const getMonthName = (monthString) => {
 const getAvailableMonths = () => {
   const months = [];
   const current = new Date();
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   for (let i = 0; i < 12; i++) {
     const date = new Date(current.getFullYear(), current.getMonth() - i, 1);
     const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     months.push(monthString);
   }
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   return months;
 };
 
 // Helper function to extract available months from customer payment data - IMPROVED
 const getAvailableMonthsFromCustomers = (customers) => {
   const monthSet = new Set();
-<<<<<<< HEAD
-  
-  // Always include current month
-  monthSet.add(getCurrentMonth());
-  
-=======
 
   // Always include current month
   monthSet.add(getCurrentMonth());
 
->>>>>>> ddb7805 (initial frontend commit)
+
   customers.forEach(customer => {
     if (customer.payments && typeof customer.payments === 'object') {
       Object.keys(customer.payments).forEach(month => {
@@ -60,20 +48,14 @@ const getAvailableMonthsFromCustomers = (customers) => {
       });
     }
   });
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   // Convert to array and sort by date (newest first)
   const months = Array.from(monthSet).sort((a, b) => {
     return new Date(b + '-01') - new Date(a + '-01');
   });
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   return months.length > 0 ? months : [getCurrentMonth()];
 };
 
@@ -91,11 +73,8 @@ const useRealtimeData = (selectedMonth) => {
   const fetchData = useCallback(async () => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
       const [customersResponse, villagesResponse, workersResponse] = await Promise.all([
         apiService.getCustomers(),
         apiService.getVillages(),
@@ -155,11 +134,8 @@ const useRealtimeData = (selectedMonth) => {
 // Payment calculation helper - IMPROVED
 const calculatePaymentData = (customer, selectedMonth) => {
   const monthlyFee = Number(customer.monthlyFee) || 0;
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   // If no payments object or no payment for selected month
   if (!customer.payments || !customer.payments[selectedMonth]) {
     return {
@@ -169,20 +145,14 @@ const calculatePaymentData = (customer, selectedMonth) => {
       status: 'unpaid'
     };
   }
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   const payment = customer.payments[selectedMonth];
   const paid = Number(payment.paid) || 0;
   const remaining = Number(payment.remaining) || (monthlyFee - paid);
   const fullyPaid = payment.fullyPaid || paid >= monthlyFee;
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   return {
     paid,
     remaining,
@@ -194,11 +164,8 @@ const calculatePaymentData = (customer, selectedMonth) => {
 const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [availableMonths, setAvailableMonths] = useState(getAvailableMonths());
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
 
   const { customers, villages, workers, loading, lastUpdated, error, refetch } = useRealtimeData(selectedMonth);
 
@@ -208,15 +175,10 @@ const Dashboard = () => {
       const monthsFromCustomers = getAvailableMonthsFromCustomers(customers);
       const allMonths = [...new Set([...monthsFromCustomers, ...getAvailableMonths()])]
         .sort((a, b) => new Date(b + '-01') - new Date(a + '-01'));
-<<<<<<< HEAD
-      
-      setAvailableMonths(allMonths);
-      
-=======
 
       setAvailableMonths(allMonths);
 
->>>>>>> ddb7805 (initial frontend commit)
+
       // Auto-select the most recent month if current selection is not in available months
       if (!allMonths.includes(selectedMonth)) {
         setSelectedMonth(allMonths[0]);
@@ -227,16 +189,6 @@ const Dashboard = () => {
   // Calculate derived stats - IMPROVED
   const stats = React.useMemo(() => {
     const totalCustomers = customers.length;
-<<<<<<< HEAD
-    
-    const paymentData = customers.map(customer => 
-      calculatePaymentData(customer, selectedMonth)
-    );
-    
-    const paidCustomers = paymentData.filter(payment => payment.fullyPaid).length;
-    const unpaidCustomers = totalCustomers - paidCustomers;
-    
-=======
 
     const paymentData = customers.map(customer =>
       calculatePaymentData(customer, selectedMonth)
@@ -245,7 +197,7 @@ const Dashboard = () => {
     const paidCustomers = paymentData.filter(payment => payment.fullyPaid).length;
     const unpaidCustomers = totalCustomers - paidCustomers;
 
->>>>>>> ddb7805 (initial frontend commit)
+
     const totalRevenue = paymentData.reduce((sum, payment) => sum + payment.paid, 0);
     const totalDue = customers.reduce((sum, customer) => sum + (Number(customer.monthlyFee) || 0), 0);
     const collectionRate = totalDue > 0 ? (totalRevenue / totalDue) * 100 : 0;
@@ -270,19 +222,12 @@ const Dashboard = () => {
         const payment = calculatePaymentData(customer, selectedMonth);
         return sum + payment.paid;
       }, 0);
-<<<<<<< HEAD
-      
-      const villageDue = villageCustomers.reduce((sum, customer) => 
-        sum + (Number(customer.monthlyFee) || 0), 0
-      );
-      
-=======
 
       const villageDue = villageCustomers.reduce((sum, customer) =>
         sum + (Number(customer.monthlyFee) || 0), 0
       );
 
->>>>>>> ddb7805 (initial frontend commit)
+
       const villageCollectionRate = villageDue > 0 ? (villageRevenue / villageDue) * 100 : 0;
 
       return {
@@ -315,11 +260,8 @@ const Dashboard = () => {
       .slice(0, 10); // Top 10 payments
   }, [customers, selectedMonth]);
 
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
 
   const handleMonthChange = (newMonth) => {
     setSelectedMonth(newMonth);
@@ -344,7 +286,6 @@ const Dashboard = () => {
     }).format(new Date(date));
   };
 
-<<<<<<< HEAD
   if (loading && !lastUpdated) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -355,9 +296,7 @@ const Dashboard = () => {
       </div>
     );
   }
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
 
   return (
     <div className="space-y-4 p-4 md:p-6 lg:p-8">
@@ -366,11 +305,8 @@ const Dashboard = () => {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-<<<<<<< HEAD
-            
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
           </div>
           <p className="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">
             Overview of your garbage collection business - {getMonthName(selectedMonth)}
@@ -446,13 +382,9 @@ const Dashboard = () => {
               <span className="font-semibold">{stats.collectionRate.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mt-1">
-<<<<<<< HEAD
-              <div 
-                className="bg-green-500 h-1.5 md:h-2 rounded-full transition-all duration-500" 
-=======
               <div
                 className="bg-green-500 h-1.5 md:h-2 rounded-full transition-all duration-500"
->>>>>>> ddb7805 (initial frontend commit)
+
                 style={{ width: `${Math.min(stats.collectionRate, 100)}%` }}
               ></div>
             </div>
@@ -523,13 +455,9 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2">
-<<<<<<< HEAD
-                      <div 
-                        className="bg-blue-500 h-1.5 md:h-2 rounded-full transition-all duration-500" 
-=======
                       <div
                         className="bg-blue-500 h-1.5 md:h-2 rounded-full transition-all duration-500"
->>>>>>> ddb7805 (initial frontend commit)
+
                         style={{ width: `${Math.min(village.collectionRate, 100)}%` }}
                       ></div>
                     </div>
@@ -560,16 +488,10 @@ const Dashboard = () => {
                 <div key={`${payment.customerId}-${index}`} className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-900 truncate text-sm md:text-base">{payment.customerName}</p>
-<<<<<<< HEAD
-                    <p className={`text-xs md:text-sm ${
-                      payment.status === 'Fully Paid' ? 'text-green-600' : 
-                      payment.status === 'Partial Payment' ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
-=======
                     <p className={`text-xs md:text-sm ${payment.status === 'Fully Paid' ? 'text-green-600' :
                         payment.status === 'Partial Payment' ? 'text-yellow-600' : 'text-red-600'
                       }`}>
->>>>>>> ddb7805 (initial frontend commit)
+
                       {payment.status}
                     </p>
                   </div>
@@ -602,11 +524,8 @@ const Dashboard = () => {
             <DollarSign className="w-6 h-6 md:w-8 md:h-8 opacity-90" />
           </div>
         </div>
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 md:p-6 rounded-xl">
           <div className="flex items-center justify-between">
             <div>
@@ -616,11 +535,8 @@ const Dashboard = () => {
             <CheckCircle className="w-6 h-6 md:w-8 md:h-8 opacity-90" />
           </div>
         </div>
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 md:p-6 rounded-xl">
           <div className="flex items-center justify-between">
             <div>

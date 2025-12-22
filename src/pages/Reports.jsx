@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-<<<<<<< HEAD
-import { 
-  Download, Filter, BarChart3, Users, DollarSign, TrendingUp, Printer, 
-=======
 import {
   Download, Filter, BarChart3, Users, DollarSign, TrendingUp, Printer,
->>>>>>> ddb7805 (initial frontend commit)
+
   Search, Calendar, MapPin, Building, FileText, PieChart, Eye, EyeOff,
   Shield, Truck, Wrench, CreditCard, Home, UserCheck, AlertCircle,
   CheckCircle, XCircle, Clock, ArrowUpRight, ArrowDownRight, Target
@@ -34,11 +30,8 @@ const generateAllMonths = () => {
 // Helper function to extract available months from customer payment data
 const getAvailableMonthsFromCustomers = (customers) => {
   const monthSet = new Set();
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   customers.forEach(customer => {
     if (customer.payments) {
       Object.keys(customer.payments).forEach(month => {
@@ -46,24 +39,12 @@ const getAvailableMonthsFromCustomers = (customers) => {
       });
     }
   });
-<<<<<<< HEAD
-  
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
   // Convert to array and sort by date (newest first)
   const months = Array.from(monthSet).sort((a, b) => {
     return new Date(b + '-01') - new Date(a + '-01');
   });
-<<<<<<< HEAD
-  
-  return months.length > 0 ? months : [getCurrentMonth()];
-};
-
-const Reports = ({ 
-  customers: propCustomers = [], 
-  villages: propVillages = [], 
-=======
 
   return months.length > 0 ? months : [getCurrentMonth()];
 };
@@ -71,7 +52,7 @@ const Reports = ({
 const Reports = ({
   customers: propCustomers = [],
   villages: propVillages = [],
->>>>>>> ddb7805 (initial frontend commit)
+
   workers: propWorkers = [],
   zones: propZones = [],
   expenses: propExpenses = [],
@@ -118,11 +99,8 @@ const Reports = ({
     if (customers.length > 0) {
       const monthsFromCustomers = getAvailableMonthsFromCustomers(customers);
       setAvailableMonths(monthsFromCustomers);
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
       if (!monthsFromCustomers.includes(filters.month)) {
         setFilters(prev => ({ ...prev, month: monthsFromCustomers[0] || getCurrentMonth() }));
       }
@@ -133,17 +111,11 @@ const Reports = ({
     try {
       setLoading(true);
       const [
-<<<<<<< HEAD
-        customersData, 
-        villagesData, 
-        workersData, 
-        zonesData, 
-=======
         customersData,
         villagesData,
         workersData,
         zonesData,
->>>>>>> ddb7805 (initial frontend commit)
+
         expensesData,
         carsData,
         withdrawalsData
@@ -185,30 +157,20 @@ const Reports = ({
     if (!customer.payments) {
       return { paid: 0, remaining: customer.monthlyFee || 0, fullyPaid: false };
     }
-<<<<<<< HEAD
-    
-    const payment = customer.payments.get?.(filters.month) || 
-                   customer.payments[filters.month] || 
-                   { paid: 0, remaining: customer.monthlyFee || 0, fullyPaid: false };
-    
-=======
 
     const payment = customer.payments.get?.(filters.month) ||
       customer.payments[filters.month] ||
       { paid: 0, remaining: customer.monthlyFee || 0, fullyPaid: false };
 
->>>>>>> ddb7805 (initial frontend commit)
+
     return payment;
   };
 
   // Calculate comparison data with previous month
   const calculateComparison = (currentData, previousData) => {
     if (!previousData) return null;
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
     return {
       totalCollected: {
         current: currentData.summary.totalCollected,
@@ -230,15 +192,10 @@ const Reports = ({
 
   const generateReport = async () => {
     if (!dataLoaded || (customers.length === 0 && villages.length === 0)) return;
-<<<<<<< HEAD
-    
-    setLoading(true);
-    
-=======
 
     setLoading(true);
 
->>>>>>> ddb7805 (initial frontend commit)
+
     try {
       let filteredCustomers = [...customers];
       let filteredVillages = [...villages];
@@ -246,11 +203,8 @@ const Reports = ({
 
       // Apply village filter
       if (filters.village !== 'all') {
-<<<<<<< HEAD
-        filteredCustomers = filteredCustomers.filter(c => 
-=======
         filteredCustomers = filteredCustomers.filter(c =>
->>>>>>> ddb7805 (initial frontend commit)
+
           c.villageId?._id === filters.village || c.villageId === filters.village
         );
         filteredVillages = filteredVillages.filter(v => v._id === filters.village);
@@ -258,32 +212,17 @@ const Reports = ({
 
       // Apply zone filter
       if (filters.zone !== 'all') {
-<<<<<<< HEAD
-        filteredCustomers = filteredCustomers.filter(c => 
-          c.zoneId?._id === filters.zone || c.zoneId === filters.zone
-        );
-        filteredVillages = filteredVillages.filter(v => 
-=======
         filteredCustomers = filteredCustomers.filter(c =>
           c.zoneId?._id === filters.zone || c.zoneId === filters.zone
         );
         filteredVillages = filteredVillages.filter(v =>
->>>>>>> ddb7805 (initial frontend commit)
+
           v.zoneId === filters.zone || v.zoneId?._id === filters.zone
         );
       }
 
       // Apply worker filter
       if (filters.worker !== 'all') {
-<<<<<<< HEAD
-        const workerVillages = villages.filter(v => 
-          v.workerId === filters.worker || v.assignedWorker?.includes(filters.worker)
-        );
-        filteredCustomers = filteredCustomers.filter(c => 
-          workerVillages.some(v => v._id === c.villageId)
-        );
-        filteredVillages = filteredVillages.filter(v => 
-=======
         const workerVillages = villages.filter(v =>
           v.workerId === filters.worker || v.assignedWorker?.includes(filters.worker)
         );
@@ -291,7 +230,7 @@ const Reports = ({
           workerVillages.some(v => v._id === c.villageId)
         );
         filteredVillages = filteredVillages.filter(v =>
->>>>>>> ddb7805 (initial frontend commit)
+
           workerVillages.some(wv => wv._id === v._id)
         );
         filteredWorkers = filteredWorkers.filter(w => w._id === filters.worker);
@@ -390,21 +329,15 @@ const Reports = ({
 
       // Worker performance
       const workerPerformance = filteredWorkers.map(worker => {
-<<<<<<< HEAD
-        const assignedVillages = villages.filter(v => 
-=======
         const assignedVillages = villages.filter(v =>
->>>>>>> ddb7805 (initial frontend commit)
+
           v.workerId === worker._id || worker.assignedVillages?.includes(v._id)
         );
         const workerCustomers = filteredCustomers.filter(c =>
           assignedVillages.some(v => v._id === c.villageId)
         );
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         const paidWorkerCustomers = workerCustomers.filter(c => {
           const payment = getSelectedMonthPayment(c);
           return payment.fullyPaid;
@@ -427,11 +360,8 @@ const Reports = ({
           totalCustomers: workerCustomers.length,
           paidCustomers: paidWorkerCustomers.length,
           unpaidCustomers: workerCustomers.length - paidWorkerCustomers.length,
-<<<<<<< HEAD
-          collectionRate: workerCustomers.length > 0 ? 
-=======
           collectionRate: workerCustomers.length > 0 ?
->>>>>>> ddb7805 (initial frontend commit)
+
             (paidWorkerCustomers.length / workerCustomers.length) * 100 : 0,
           totalRevenue: workerRevenue,
           totalDue: workerDue,
@@ -442,15 +372,6 @@ const Reports = ({
       // Customer details for customer report
       const customerDetails = filteredCustomers.map(customer => {
         const payment = getSelectedMonthPayment(customer);
-<<<<<<< HEAD
-        const village = villages.find(v => 
-          v._id === customer.villageId?._id || v._id === customer.villageId
-        );
-        const zone = zones.find(z => 
-          z._id === customer.zoneId?._id || z._id === customer.zoneId
-        );
-        
-=======
         const village = villages.find(v =>
           v._id === customer.villageId?._id || v._id === customer.villageId
         );
@@ -458,7 +379,7 @@ const Reports = ({
           z._id === customer.zoneId?._id || z._id === customer.zoneId
         );
 
->>>>>>> ddb7805 (initial frontend commit)
+
         return {
           customerId: customer._id,
           customerName: customer.fullName,
@@ -469,13 +390,9 @@ const Reports = ({
           monthlyFee: customer.monthlyFee || 0,
           paidAmount: payment.paid || 0,
           remainingAmount: payment.remaining || customer.monthlyFee || 0,
-<<<<<<< HEAD
-          status: payment.fullyPaid ? 'Fully Paid' : 
-                 payment.paid > 0 ? 'Partial Payment' : 'Not Paid',
-=======
           status: payment.fullyPaid ? 'Fully Paid' :
             payment.paid > 0 ? 'Partial Payment' : 'Not Paid',
->>>>>>> ddb7805 (initial frontend commit)
+
           lastPayment: payment.paidDate || 'No payment',
           joinDate: customer.createdAt || 'Unknown'
         };
@@ -485,13 +402,9 @@ const Reports = ({
       const monthlyExpenses = expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         const filterDate = new Date(filters.month + '-01');
-<<<<<<< HEAD
-        return expenseDate.getMonth() === filterDate.getMonth() && 
-               expenseDate.getFullYear() === filterDate.getFullYear();
-=======
         return expenseDate.getMonth() === filterDate.getMonth() &&
           expenseDate.getFullYear() === filterDate.getFullYear();
->>>>>>> ddb7805 (initial frontend commit)
+
       });
 
       const expensesByType = monthlyExpenses.reduce((acc, expense) => {
@@ -501,21 +414,15 @@ const Reports = ({
 
       // Zone performance report
       const zonePerformance = zones.map(zone => {
-<<<<<<< HEAD
-        const zoneVillages = villages.filter(v => 
-=======
         const zoneVillages = villages.filter(v =>
->>>>>>> ddb7805 (initial frontend commit)
+
           v.zoneId === zone._id || v.zoneId?._id === zone._id
         );
         const zoneCustomers = filteredCustomers.filter(c =>
           zoneVillages.some(v => v._id === c.villageId)
         );
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         const zoneRevenue = zoneCustomers.reduce((sum, customer) => {
           const payment = getSelectedMonthPayment(customer);
           return sum + (payment.paid || 0);
@@ -549,11 +456,8 @@ const Reports = ({
         const totalExpenses = car.expenses?.reduce((sum, expense) => sum + (expense.amount || 0), 0) || 0;
         const maintenanceExpenses = car.expenses?.filter(e => e.type === 'maintenance').reduce((sum, e) => sum + e.amount, 0) || 0;
         const fuelExpenses = car.expenses?.filter(e => e.type === 'fuel').reduce((sum, e) => sum + e.amount, 0) || 0;
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         return {
           carId: car._id,
           plateNumber: car.plateNumber,
@@ -571,13 +475,9 @@ const Reports = ({
       const monthlyWithdrawals = withdrawals.filter(withdrawal => {
         const withdrawDate = new Date(withdrawal.withdrawDate);
         const filterDate = new Date(filters.month + '-01');
-<<<<<<< HEAD
-        return withdrawDate.getMonth() === filterDate.getMonth() && 
-               withdrawDate.getFullYear() === filterDate.getFullYear();
-=======
         return withdrawDate.getMonth() === filterDate.getMonth() &&
           withdrawDate.getFullYear() === filterDate.getFullYear();
->>>>>>> ddb7805 (initial frontend commit)
+
       });
 
       const withdrawalsByCategory = monthlyWithdrawals.reduce((acc, withdrawal) => {
@@ -587,11 +487,8 @@ const Reports = ({
 
       // Risk assessment
       const riskAssessment = {
-<<<<<<< HEAD
-        highRiskVillages: villageBreakdownByZone.zones.flatMap(zone => 
-=======
         highRiskVillages: villageBreakdownByZone.zones.flatMap(zone =>
->>>>>>> ddb7805 (initial frontend commit)
+
           zone.villages.filter(v => v.collectionRate < 50)
         ),
         lowPerformanceWorkers: workerPerformance.filter(w => w.collectionRate < 60),
@@ -617,11 +514,8 @@ const Reports = ({
           totalVillages: filteredVillages.length,
           totalWorkers: filteredWorkers.length,
           totalZones: zones.length,
-<<<<<<< HEAD
-          collectionRate: filteredCustomers.length > 0 ? 
-=======
           collectionRate: filteredCustomers.length > 0 ?
->>>>>>> ddb7805 (initial frontend commit)
+
             (paidCustomers.length / filteredCustomers.length) * 100 : 0,
           totalExpenses: monthlyExpenses.reduce((sum, exp) => sum + exp.amount, 0),
           totalWithdrawals: monthlyWithdrawals.reduce((sum, w) => sum + w.amount, 0),
@@ -649,11 +543,8 @@ const Reports = ({
       };
 
       setReportData(reportData);
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
     } catch (error) {
       console.error('Error generating report:', error);
     } finally {
@@ -663,11 +554,8 @@ const Reports = ({
 
   const handlePrint = () => {
     if (!reportData) return;
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
     setPrintData({
       ...reportData,
       villageBreakdownByZone: reportData.villageBreakdownByZone,
@@ -675,11 +563,8 @@ const Reports = ({
       printedDate: new Date().toLocaleDateString(),
       printedTime: new Date().toLocaleTimeString()
     });
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
     setTimeout(() => {
       window.print();
     }, 500);
@@ -687,17 +572,11 @@ const Reports = ({
 
   const handleExport = (format = 'csv') => {
     if (!reportData) return;
-<<<<<<< HEAD
-    
-    if (format === 'csv') {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      
-=======
 
     if (format === 'csv') {
       let csvContent = "data:text/csv;charset=utf-8,";
 
->>>>>>> ddb7805 (initial frontend commit)
+
       if (filters.reportType === 'dashboard') {
         csvContent += "Metric,Value,Previous Month,Change\n";
         csvContent += `Total Collected,${reportData.summary.totalCollected},,\n`;
@@ -754,11 +633,8 @@ const Reports = ({
           csvContent += `"Overdue Maintenance","${car.plateNumber}","Last maintenance: ${car.lastMaintenance}","High"\n`;
         });
       }
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
       // Create download link
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -809,18 +685,11 @@ const Reports = ({
             <p className="text-2xl font-bold mt-1">{value}</p>
             {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
             {trend && (
-<<<<<<< HEAD
-              <div className={`flex items-center mt-2 text-sm ${
-                trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-600'
-              }`}>
-                {trend > 0 ? <ArrowUpRight className="w-4 h-4 mr-1" /> : 
-                 trend < 0 ? <ArrowDownRight className="w-4 h-4 mr-1" /> : null}
-=======
               <div className={`flex items-center mt-2 text-sm ${trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-600'
                 }`}>
                 {trend > 0 ? <ArrowUpRight className="w-4 h-4 mr-1" /> :
                   trend < 0 ? <ArrowDownRight className="w-4 h-4 mr-1" /> : null}
->>>>>>> ddb7805 (initial frontend commit)
+
                 {trend !== 0 && `${Math.abs(trend).toFixed(1)}%`}
                 {trend === 0 && 'No change'}
               </div>
@@ -834,7 +703,6 @@ const Reports = ({
     );
   };
 
-<<<<<<< HEAD
   if (loading && !reportData) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -842,9 +710,7 @@ const Reports = ({
       </div>
     );
   }
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
 
   return (
     <div className="space-y-6">
@@ -894,11 +760,8 @@ const Reports = ({
             <label className="block text-sm font-medium text-gray-700">Report Type</label>
             <select
               value={filters.reportType}
-<<<<<<< HEAD
-              onChange={(e) => setFilters({...filters, reportType: e.target.value})}
-=======
               onChange={(e) => setFilters({ ...filters, reportType: e.target.value })}
->>>>>>> ddb7805 (initial frontend commit)
+
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
             >
               <option value="dashboard">Dashboard Overview</option>
@@ -931,11 +794,8 @@ const Reports = ({
             <label className="block text-sm font-medium text-gray-700">Zone</label>
             <select
               value={filters.zone}
-<<<<<<< HEAD
-              onChange={(e) => setFilters({...filters, zone: e.target.value})}
-=======
               onChange={(e) => setFilters({ ...filters, zone: e.target.value })}
->>>>>>> ddb7805 (initial frontend commit)
+
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
             >
               <option value="all">All Zones</option>
@@ -950,11 +810,8 @@ const Reports = ({
             <label className="block text-sm font-medium text-gray-700">Village</label>
             <select
               value={filters.village}
-<<<<<<< HEAD
-              onChange={(e) => setFilters({...filters, village: e.target.value})}
-=======
               onChange={(e) => setFilters({ ...filters, village: e.target.value })}
->>>>>>> ddb7805 (initial frontend commit)
+
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
             >
               <option value="all">All Villages</option>
@@ -969,11 +826,8 @@ const Reports = ({
             <label className="block text-sm font-medium text-gray-700">Worker</label>
             <select
               value={filters.worker}
-<<<<<<< HEAD
-              onChange={(e) => setFilters({...filters, worker: e.target.value})}
-=======
               onChange={(e) => setFilters({ ...filters, worker: e.target.value })}
->>>>>>> ddb7805 (initial frontend commit)
+
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
             >
               <option value="all">All Workers</option>
@@ -985,11 +839,8 @@ const Reports = ({
             </select>
           </div>
           <div className="flex items-end">
-<<<<<<< HEAD
-            <button 
-=======
             <button
->>>>>>> ddb7805 (initial frontend commit)
+
               onClick={generateReport}
               disabled={loading}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full transition duration-200 disabled:opacity-50"
@@ -998,11 +849,8 @@ const Reports = ({
             </button>
           </div>
         </div>
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> ddb7805 (initial frontend commit)
+
         {/* Month Info */}
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <div className="flex items-center justify-between text-sm">
@@ -1106,18 +954,11 @@ const Reports = ({
                       <span>{reportData.summary.collectionRate.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-<<<<<<< HEAD
-                      <div 
-                        className={`h-2 rounded-full ${
-                          reportData.summary.collectionRate >= 80 ? 'bg-green-600' :
-                          reportData.summary.collectionRate >= 60 ? 'bg-yellow-600' : 'bg-red-600'
-                        }`}
-=======
                       <div
                         className={`h-2 rounded-full ${reportData.summary.collectionRate >= 80 ? 'bg-green-600' :
                             reportData.summary.collectionRate >= 60 ? 'bg-yellow-600' : 'bg-red-600'
                           }`}
->>>>>>> ddb7805 (initial frontend commit)
+
                         style={{ width: `${Math.min(reportData.summary.collectionRate, 100)}%` }}
                       ></div>
                     </div>
@@ -1158,11 +999,8 @@ const Reports = ({
                         <MapPin className="w-4 h-4 mr-2" />{zone.name}
                       </h3>
                       <div className="text-sm text-gray-600">
-<<<<<<< HEAD
-                        Collection Rate: {zone.stats.collectionRate.toFixed(1)}% • 
-=======
                         Collection Rate: {zone.stats.collectionRate.toFixed(1)}% •
->>>>>>> ddb7805 (initial frontend commit)
+
                         Customers: {zone.stats.totalCustomers}
                       </div>
                     </div>
@@ -1380,24 +1218,6 @@ const Reports = ({
               }
             `}
           </style>
-<<<<<<< HEAD
-          
-          <div className="print-page">
-            <div className="print-header">
-              <div className="report-title">
-                {filters.reportType === 'dashboard' ? 'BUSINESS INTELLIGENCE DASHBOARD' : 
-                 filters.reportType === 'payments' ? 'PAYMENTS REPORT' : 
-                 filters.reportType === 'workers' ? 'WORKERS PERFORMANCE REPORT' : 
-                 filters.reportType === 'customers' ? 'CUSTOMERS REPORT' : 
-                 filters.reportType === 'zones' ? 'ZONES PERFORMANCE REPORT' : 
-                 filters.reportType === 'risk' ? 'RISK ASSESSMENT REPORT' : 'EXPENSES REPORT'}
-              </div>
-              <div className="report-subtitle">
-                Period: {new Date(filters.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} | 
-                Generated on: {printData.printedDate} at {printData.printedTime}
-              </div>
-              <div style={{fontSize: '12px', fontWeight: 'bold'}}>
-=======
 
           <div className="print-page">
             <div className="print-header">
@@ -1414,7 +1234,7 @@ const Reports = ({
                 Generated on: {printData.printedDate} at {printData.printedTime}
               </div>
               <div style={{ fontSize: '12px', fontWeight: 'bold' }}>
->>>>>>> ddb7805 (initial frontend commit)
+
                 Scope: {getSelectedZoneName()} • {getSelectedVillageName()} • {getSelectedWorkerName()}
               </div>
             </div>

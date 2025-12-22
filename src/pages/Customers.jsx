@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, Phone, MapPin, DollarSign, Users, CheckCircle, XCircle, Printer, Calendar, Building, Map, CheckSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Phone, MapPin, DollarSign, Users, CheckCircle, XCircle, Printer, Calendar, Building, Map, CheckSquare, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import config from '../config/env';
 
 const API_BASE_URL = config.apiBaseUrl;
@@ -61,6 +62,11 @@ const Customers = () => {
   const [monthlyDate, setMonthlyDate] = useState('');
 
   // All 12 months for the current year
+  const [wbJsondata, setWbJsondata] = useState([]);
+  const [showImportOptionsModal, setShowImportOptionsModal] = useState(false);
+  const [importOptions, setImportOptions] = useState({ defaultAddress: '', defaultZoneId: '' });
+  const [selectedCustomers, setSelectedCustomers] = useState(new Set());
+
   const allMonths = generateAllMonths();
 
   // Get auth token
@@ -363,6 +369,52 @@ const Customers = () => {
     return matchesSearch && matchesPayment && matchesZone;
   });
 
+  // Toggle select all
+  const toggleSelectAll = () => {
+    if (selectedCustomers.size === filteredCustomers.length) {
+      setSelectedCustomers(new Set());
+    } else {
+      setSelectedCustomers(new Set(filteredCustomers.map(c => c._id)));
+    }
+  };
+
+  // Toggle select individual customer
+  const toggleSelectCustomer = (customerId) => {
+    const newSelected = new Set(selectedCustomers);
+    if (newSelected.has(customerId)) {
+      newSelected.delete(customerId);
+    } else {
+      newSelected.add(customerId);
+    }
+    setSelectedCustomers(newSelected);
+  };
+
+  // Bulk Delete
+  const handleBulkDelete = async () => {
+    if (selectedCustomers.size === 0) return;
+
+    if (!window.confirm(`Are you sure you want to delete ${selectedCustomers.size} customers? This action cannot be undone.`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await apiRequest('/customers/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ customerIds: Array.from(selectedCustomers) })
+      });
+
+      setCustomers(prev => prev.filter(c => !selectedCustomers.has(c._id)));
+      setSelectedCustomers(new Set());
+      alert('Selected customers deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting customers:', error);
+      alert('Error deleting customers: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle partial payment - UPDATED: Only affects current month
   const handlePartialPayment = (customer) => {
     setSelectedCustomer(customer);
@@ -606,6 +658,243 @@ const Customers = () => {
     }
   };
 
+  // Import customers from Excel - UPDATED WITH SMART HEADER DETECTION
+  const handleExcelUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      // Read as array of arrays to handle custom headers/titles
+      const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+      if (!rawData || rawData.length === 0) {
+        throw new Error("File appears to be empty");
+      }
+
+      // Smart Header Detection
+      const nameKeys = ['Name', 'Full Name', 'Customer Name', 'Customer', 'Magaca', 'Macamiilka', 'Names', 'Client Name', 'Macaamiil'];
+      const phoneKeys = ['Phone', 'Mobile', 'Tel', 'Number', 'Phone Number', 'Telefoonka', 'Tell', 'No', 'S/No', 'Mobile Number', 'Telephone'];
+      const feeKeys = ['Fee', 'Monthly Fee', 'Amount', 'Price', 'Qiimaha', 'Lacagta', 'Bishii', 'Cost', 'Rate', 'Heshiis', 'T/Lacag', 'T/Lacag bixnta'];
+      const addrKeys = ['Address', 'Location', 'City', 'Goobta', 'Magaalada', 'Addresska', 'Hoyga'];
+      const zoneKeys = ['Zone', 'Area', 'Xaafada', 'Dagmada', 'Zone Name', 'Village', 'Tuulada'];
+
+      let headerRowIndex = 0;
+      let maxMatches = 0;
+      let columnIndices = {
+        name: -1,
+        phone: -1,
+        fee: -1,
+        address: -1,
+        zone: -1
+      };
+
+      // Scan first 20 rows to find the best header row
+      const rowsToScan = Math.min(rawData.length, 20);
+      for (let i = 0; i < rowsToScan; i++) {
+        const row = rawData[i];
+        let matches = 0;
+        let currentIndices = { name: -1, phone: -1, fee: -1, address: -1, zone: -1 };
+
+        row.forEach((cell, index) => {
+          if (!cell || typeof cell !== 'string') return;
+          const cellLower = cell.trim().toLowerCase();
+
+          if (nameKeys.some(k => cellLower === k.toLowerCase() || cellLower.includes(k.toLowerCase()))) { matches++; currentIndices.name = index; }
+          else if (phoneKeys.some(k => cellLower === k.toLowerCase() || cellLower.includes(k.toLowerCase()))) { matches++; currentIndices.phone = index; }
+          else if (feeKeys.some(k => cellLower === k.toLowerCase() || cellLower.includes(k.toLowerCase()))) {
+            matches++;
+            // Smart Priority Logic for Fees (prioritize Heshiis/Monthly Fee > Generic Amount)
+            const pKeys = ['heshiis', 'monthly fee', 'qiimaha', 'bishii', 'lacagta'];
+            const isPriority = pKeys.some(pk => cellLower.includes(pk));
+            const isExact = feeKeys.some(k => cellLower === k.toLowerCase());
+
+            if (currentIndices.fee === -1) {
+              currentIndices.fee = index;
+              currentIndices.feePriority = isPriority;
+              currentIndices.feeExact = isExact;
+            } else {
+              // Only overwrite if we found a significantly better match
+              // Rule 1: Priority match overwrites non-priority
+              // Rule 2: Exact match overwrites non-exact (if priority is same)
+              const curP = currentIndices.feePriority;
+              const curE = currentIndices.feeExact;
+
+              if ((isPriority && !curP) || (isExact && !curE && isPriority === curP)) {
+                currentIndices.fee = index;
+                currentIndices.feePriority = isPriority;
+                currentIndices.feeExact = isExact;
+              }
+            }
+          }
+          else if (addrKeys.some(k => cellLower === k.toLowerCase() || cellLower.includes(k.toLowerCase()))) { matches++; currentIndices.address = index; }
+          else if (zoneKeys.some(k => cellLower === k.toLowerCase() || cellLower.includes(k.toLowerCase()))) { matches++; currentIndices.zone = index; }
+        });
+
+        // We prioritize rows that have at least Name and Phone
+        if (matches > maxMatches) {
+          maxMatches = matches;
+          headerRowIndex = i;
+          columnIndices = currentIndices;
+        }
+      }
+
+      console.log(`Smart Import: Found header at row ${headerRowIndex}`, columnIndices);
+
+      // If no good header found, fallback
+      if (columnIndices.name === -1 && columnIndices.phone === -1) {
+        console.warn("Smart Import: No headers found, attempting heuristic fallback");
+        // Check if column 0 looks like S/N (numbers) and column 1 looks like names
+        const firstDataRow = rawData.length > 1 ? rawData[1] : rawData[0]; // Guess row 1 if exists
+
+        // Basic Heuristic: If Col 0 is small number/S-N, Name is probably Col 1
+        columnIndices.name = 1;
+        columnIndices.phone = 2;
+        columnIndices.fee = 3;
+
+        // Adjust if file has fewer columns
+        if (rawData[0].length <= 2) {
+          columnIndices.name = 0;
+          columnIndices.phone = 1;
+        }
+      }
+
+      // Extract and Normalize Data
+      const normalizedData = [];
+      // Start reading FROM THE ROW AFTER headers
+      for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+        const row = rawData[i];
+        // Skip empty rows
+        if (!row || row.length === 0) continue;
+
+        const rawName = columnIndices.name > -1 ? row[columnIndices.name] : '';
+        const rawPhone = columnIndices.phone > -1 ? row[columnIndices.phone] : '';
+
+        // Skip if Name AND Phone are empty (likely an empty row or footer)
+        if (!rawName && !rawPhone) continue;
+
+        const rawFee = columnIndices.fee > -1 ? row[columnIndices.fee] : 0;
+        const rawAddress = columnIndices.address > -1 ? row[columnIndices.address] : '';
+        const rawZone = columnIndices.zone > -1 ? row[columnIndices.zone] : '';
+
+        normalizedData.push({
+          fullName: rawName,
+          phoneNumber: rawPhone,
+          monthlyFee: rawFee,
+          address: rawAddress,
+          zoneName: rawZone
+        });
+      }
+
+      setWbJsondata(normalizedData);
+      setShowImportOptionsModal(true);
+
+      // Reset input
+      e.target.value = '';
+    } catch (error) {
+      console.error('Error importing Excel:', error);
+      alert('Error importing Excel: ' + error.message);
+      e.target.value = '';
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const processImport = async () => {
+    setShowImportOptionsModal(false);
+    setLoading(true);
+
+    const jsonData = wbJsondata;
+    let successCount = 0;
+    let failCount = 0;
+    let lastError = null;
+
+    for (const row of jsonData) {
+      // Data is already normalized by handleExcelUpload
+      let { fullName, phoneNumber, monthlyFee, address, zoneName } = row;
+
+      // Basic Cleaning
+      fullName = String(fullName || '').trim();
+      phoneNumber = String(phoneNumber || '').trim();
+
+      if (!fullName && !phoneNumber) {
+        failCount++;
+        continue;
+      }
+
+      if (!address && importOptions.defaultAddress) {
+        address = importOptions.defaultAddress;
+      }
+
+      // Clean Fee
+      let cleanFee = 0;
+      if (typeof monthlyFee === 'number') {
+        cleanFee = monthlyFee;
+      } else if (typeof monthlyFee === 'string') {
+        // Remove currency symbols and non-numeric chars except dot
+        const numStr = monthlyFee.replace(/[^0-9.]/g, '');
+        cleanFee = parseFloat(numStr) || 0;
+      }
+
+      // Resolve Zone
+      let zoneId = null;
+      if (zoneName) {
+        const zoneStr = String(zoneName).toLowerCase();
+        const matchedZone = zones.find(z =>
+          z.name?.toLowerCase() === zoneStr ||
+          z.code?.toLowerCase() === zoneStr
+        );
+        if (matchedZone) zoneId = matchedZone._id;
+      }
+
+      if (!zoneId && importOptions.defaultZoneId) {
+        zoneId = importOptions.defaultZoneId;
+      }
+
+      const customerData = {
+        fullName,
+        phoneNumber,
+        address: address ? String(address) : '',
+        monthlyFee: cleanFee,
+        zoneId
+      };
+
+      try {
+        await apiRequest('/customers', {
+          method: 'POST',
+          body: JSON.stringify(customerData)
+        });
+        successCount++;
+      } catch (err) {
+        console.error("Import error for row", row, err);
+        lastError = err.message || JSON.stringify(err);
+        failCount++;
+      }
+    }
+
+    // Delay slightly to confirm all processed
+    setTimeout(async () => {
+      let msg = `Import process completed!\n\nSuccessfully Imported: ${successCount}\nFailed/Skipped: ${failCount}`;
+      if (failCount > 0) {
+        msg += `\n\nSome rows were skipped because they lacked a Name or Phone number, or were duplicates.`;
+      }
+      alert(msg);
+
+      // Clear data
+      setWbJsondata([]);
+      setImportOptions({ defaultAddress: '', defaultZoneId: '' });
+
+      // Reload data
+      await loadData();
+      setLoading(false);
+    }, 500);
+
+  };
+
   // Add/Edit village
   const handleVillageSubmit = async (e) => {
     e.preventDefault();
@@ -656,8 +945,6 @@ const Customers = () => {
     const zoneData = {
       name: formData.get('name'),
       code: formData.get('code'),
-      villageId: formData.get('villageId'),
-      collectionDay: formData.get('collectionDay'),
       description: formData.get('description')
     };
 
@@ -805,6 +1092,16 @@ const Customers = () => {
             <Map className="w-4 h-4 md:w-5 md:h-5 mr-2" />
             Manage Zones
           </button>
+          <label className="bg-green-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg flex items-center hover:bg-green-700 transition duration-200 text-sm md:text-base flex-1 sm:flex-none justify-center cursor-pointer">
+            <FileSpreadsheet className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+            Import Excel
+            <input
+              type="file"
+              accept=".xlsx, .xls"
+              className="hidden"
+              onChange={handleExcelUpload}
+            />
+          </label>
           <button
             onClick={() => setShowCustomerModal(true)}
             className="bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg flex items-center hover:bg-blue-700 transition duration-200 text-sm md:text-base flex-1 sm:flex-none justify-center"
@@ -940,6 +1237,15 @@ const Customers = () => {
                 </>
               )}
             </button>
+            {selectedCustomers.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-red-700 transition duration-200 text-sm md:text-base"
+              >
+                <Trash2 className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                Delete Selected ({selectedCustomers.size})
+              </button>
+            )}
           </div>
           <p className="text-xs text-gray-500 mt-2">
             💡 <strong>Note:</strong> Previous month's remaining balance carries over to the next month. Total Due = Previous Balance + Monthly Fee.
@@ -955,6 +1261,14 @@ const Customers = () => {
               <tr>
                 <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   #
+                </th>
+                <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    checked={filteredCustomers.length > 0 && selectedCustomers.size === filteredCustomers.length}
+                    onChange={toggleSelectAll}
+                  />
                 </th>
                 <th className="px-3 py-2 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer Info
@@ -980,6 +1294,14 @@ const Customers = () => {
                   <tr key={customer._id} className="hover:bg-gray-50">
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm font-medium text-gray-900">
                       {index + 1}
+                    </td>
+                    <td className="px-3 py-3 md:px-6 md:py-4">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        checked={selectedCustomers.has(customer._id)}
+                        onChange={() => toggleSelectCustomer(customer._id)}
+                      />
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4">
                       <div className="text-sm font-medium text-gray-900">{customer.fullName}</div>
@@ -1135,40 +1457,57 @@ const Customers = () => {
             const startNumber = (currentPage - 1) * 48 + 1;
 
             return (
-              <div key={`page-${currentPage}`} className="print-page h-screen flex flex-col" style={{ pageBreakAfter: 'always', margin: 0, padding: 0 }}>
+              <div key={`page-${currentPage}`} className="print-page flex flex-col" style={{ pageBreakAfter: 'always', margin: 0, padding: 0 }}>
                 <div className="p-0">
-                  {/* Header - UPDATED: Compact */}
-                  <div className="text-center mb-1 border-b border-gray-300 pb-0.5">
-                    <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide">
-                      {printData.zoneName
-                        ? `${printData.zoneName} - SHIRKADA NADAAFADA EE GOOL`
-                        : 'SHIRKADA NADAAFADA EE GOOL'}
-                    </h1>
-                    <div className="flex justify-between items-end px-2">
-                      <p className="text-[10px] text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
-                      <p className="text-[10px] text-gray-600">Page {currentPage}/{totalPrintPages}</p>
+                  {/* Header - SHOW ONLY ON FIRST PAGE */}
+                  {currentPage === 1 && (
+                    <div className="text-center mb-1 border-b border-gray-300 pb-0.5">
+                      <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide">
+                        {printData.zoneName
+                          ? `${printData.zoneName} - SHIRKADA NADAAFADA EE GOOL`
+                          : 'SHIRKADA NADAAFADA EE GOOL'}
+                      </h1>
+                      <p className="text-[9px] font-semibold text-gray-700 my-0.5">powered by HUDI SOMPROJECT</p>
+                      <div className="flex justify-between items-end px-2">
+                        <p className="text-[10px] text-gray-600">Month: {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                        <p className="text-[10px] text-gray-600">Date: {printData.printedDate}</p>
+                        <p className="text-[10px] text-gray-600">Page {currentPage}/{totalPrintPages}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Customers Table - UPDATED: Ultra compact */}
-                  <table className="w-full border-collapse border border-gray-300 table-fixed" style={{ fontSize: '11px' }}>
+                  <table className="w-full border-collapse border border-gray-300 table-fixed" style={{ fontSize: '10px' }}>
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '5%' }}>#</th>
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '30%' }}>Name</th>
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Phone</th>
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Fee</th>
-                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Status</th>
                         <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '20%' }}>Sign</th>
+                        <th className="border border-gray-300 px-1 py-0.5 text-left font-medium" style={{ width: '15%' }}>Date</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {pageCustomers.map((customer, index) => {
-                        const payment = getSelectedMonthPayment(customer);
+                      {Array.from({ length: 48 }).map((_, i) => {
+                        const customer = pageCustomers[i];
+                        if (!customer) {
+                          return (
+                            <tr key={`empty-${i}`} style={{ height: '19px' }}>
+                              <td className="border border-gray-300 px-1 py-0" />
+                              <td className="border border-gray-300 px-1 py-0" />
+                              <td className="border border-gray-300 px-1 py-0" />
+                              <td className="border border-gray-300 px-1 py-0" />
+                              <td className="border border-gray-300 px-1 py-0" />
+                              <td className="border border-gray-300 px-1 py-0" />
+                            </tr>
+                          );
+                        }
 
+                        const payment = getSelectedMonthPayment(customer);
                         return (
-                          <tr key={customer._id} style={{ height: '18px' }}>
-                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none">{startNumber + index}</td>
+                          <tr key={customer._id} style={{ height: '19px' }}>
+                            <td className="border border-gray-300 px-1 py-0 align-middle leading-none">{startNumber + i}</td>
                             <td className="border border-gray-300 px-1 py-0 align-middle leading-none truncate">{customer.fullName}</td>
                             <td className="border border-gray-300 px-1 py-0 align-middle leading-none">{customer.phoneNumber}</td>
                             <td className="border border-gray-300 px-1 py-0 align-middle leading-none text-right">
@@ -1184,14 +1523,8 @@ const Customers = () => {
                           </tr>
                         );
                       })}
-                      {/* Fill empty rows if needed to maintain size, though user wants 48 fit */}
                     </tbody>
                   </table>
-
-                  {/* Page Footer */}
-                  <div className="mt-1 text-center border-t border-gray-300 pt-0.5">
-                    <p className="text-[9px] font-semibold text-gray-700">powered by HUDI SOMPROJECT</p>
-                  </div>
                 </div>
               </div>
             );
@@ -1415,14 +1748,11 @@ const Customers = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Zone</option>
-                  {zones.map(zone => {
-                    const village = villages.find(v => v._id === zone.villageId);
-                    return (
-                      <option key={zone._id} value={zone._id}>
-                        {zone.name} - {village?.name || 'Unknown Village'} ({zone.collectionDay})
-                      </option>
-                    );
-                  })}
+                  {zones.map(zone => (
+                    <option key={zone._id} value={zone._id}>
+                      {zone.name} ({zone.code})
+                    </option>
+                  ))}
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
                   Zone includes village information and collection day
@@ -1516,44 +1846,6 @@ const Customers = () => {
                     placeholder="Enter code (e.g., Z1)"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Village *
-                  </label>
-                  <select
-                    name="villageId"
-                    required
-                    defaultValue={editingZone?.villageId}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Village</option>
-                    {villages.map(village => (
-                      <option key={village._id} value={village._id}>
-                        {village.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Collection Day *
-                  </label>
-                  <select
-                    name="collectionDay"
-                    required
-                    defaultValue={editingZone?.collectionDay}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select Day</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                  </select>
-                </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description
@@ -1646,8 +1938,74 @@ const Customers = () => {
               )}
             </div>
           </div>
-        </div>
+        </div >
       )}
+
+      {/* Import Options Modal */}
+      {
+        showImportOptionsModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 no-print">
+            <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-md">
+              <h2 className="text-xl font-semibold mb-4">Import Options</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Found {wbJsondata.length} rows used in this excel file.
+                <br />
+                You can set default values for missing fields below.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address (Applied if missing/empty in Excel)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter default address for all..."
+                    value={importOptions.defaultAddress}
+                    onChange={(e) => setImportOptions({ ...importOptions, defaultAddress: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zone / Village (Applied if missing/empty in Excel)
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={importOptions.defaultZoneId}
+                    onChange={(e) => setImportOptions({ ...importOptions, defaultZoneId: e.target.value })}
+                  >
+                    <option value="">-- Select Zone/Village to Apply --</option>
+                    {zones.map(z => (
+                      <option key={z._id} value={z._id}>{z.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-6">
+                <button
+                  onClick={() => {
+                    setShowImportOptionsModal(false);
+                    setWbJsondata([]);
+                    setImportOptions({ defaultAddress: '', defaultZoneId: '' });
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={processImport}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                >
+                  Start Import
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
 
       {/* Print Styles */}
       <style>
@@ -1655,7 +2013,7 @@ const Customers = () => {
           @media print {
             @page {
               size: A4;
-              margin: 0.3cm;
+              margin: 0.1cm;
             }
             .no-print {
               display: none !important;
@@ -1666,7 +2024,6 @@ const Customers = () => {
             .print-page {
               page-break-after: always;
               font-family: Arial, sans-serif;
-              height: 100vh;
               display: flex;
               flex-direction: column;
             }
@@ -1686,46 +2043,46 @@ const Customers = () => {
             }
             .print-section thead th {
               border: 1px solid #000;
-              padding: 4px 2px;
+              padding: 3px 2px;
               text-align: left;
               background-color: #f0f0f0;
               font-weight: bold;
               font-size: 8px;
-              height: 15px;
+              height: 14px;
             }
             .print-section tbody td {
               border: 1px solid #000;
-              padding: 3px 2px;
+              padding: 2px 2px;
               text-align: left;
               font-size: 8px;
-              height: 12px;
+              height: 11px;
               vertical-align: middle;
             }
             .print-section h1 {
               font-size: 14px;
-              margin: 5px 0;
-              line-height: 1.2;
+              margin: 3px 0;
+              line-height: 1.1;
             }
             .print-section p {
               font-size: 8px;
-              margin: 3px 0;
-              line-height: 1.2;
+              margin: 1px 0;
+              line-height: 1.1;
             }
             .print-section .print-page > div {
-              padding: 10px;
+              padding: 5px;
             }
             .print-section .border-b {
-              padding-bottom: 5px;
-              margin-bottom: 5px;
+              padding-bottom: 3px;
+              margin-bottom: 3px;
             }
             .print-section .border-t {
-              padding-top: 5px;
-              margin-top: 5px;
+              padding-top: 3px;
+              margin-top: 3px;
             }
           }
         `}
       </style>
-    </div>
+    </div >
   );
 };
 
